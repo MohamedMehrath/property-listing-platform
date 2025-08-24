@@ -41,11 +41,11 @@ This section automatically generates draft GitHub Issues for any `Critical` or `
 This section contains the core engineering playbook for the project.
 
 **Architectural Guardrails (Golden Rules):**
-1.  **Never Mix Languages in One File:** PHP logic, HTML, CSS, and JavaScript must be in separate files.
+1.  **Never Mix Languages in One File:** PHP logic, HTML, CSS, and JavaScript must be in separate files. Consider adopting an architectural pattern like **MVC (Model-View-Controller)** to formalize this separation.
 2.  **All Database Queries Must Use PDO:** Direct calls to `mysql_*` or `mysqli_*` are forbidden. Use prepared statements to prevent SQL injection.
 3.  **No Business Logic in the Frontend:** Client-side code is for presentation and user interaction only. All business logic belongs on the server.
 4.  **Components Must Be Reusable:** Before writing new code, check the Component Catalog for an existing solution.
-5.  **Write for Humans, Not Just Machines:** Code must be clear, commented, and easy for another developer to understand.
+5.  **Write for Humans, Not Just Machines:** Code must be clear, commented, and easy for another developer to understand. Adopting a specific coding style guide, like [PSR-12](https://www.php-fig.org/psr/psr-12/), can help maintain consistency.
 
 **Component Catalog:**
 - See the detailed guide here: [docs/mission_control/EG_01_Component_Catalog.md](./docs/mission_control/EG_01_Component_Catalog.md)
