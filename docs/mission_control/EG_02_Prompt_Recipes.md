@@ -19,6 +19,7 @@ This document contains a curated list of effective prompts for interacting with 
 > 1.  **Separate Concerns:** Isolate the PHP logic, database queries, HTML, and JavaScript into separate, manageable parts.
 > 2.  **Improve Security:** Replace any deprecated or insecure functions (like `mysql_*`) with modern, secure alternatives (e.g., PDO with prepared statements).
 > 3.  **Enhance Readability:** Add comments, improve variable names, and break down large functions into smaller, single-purpose ones.
+> 4.  **Increase Test Coverage:** Write unit tests for the extracted business logic to ensure correctness and prevent future regressions.
 >
 > Please create a new branch for this refactoring and submit a pull request for review when you are done.
 
