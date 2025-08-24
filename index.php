@@ -1,36 +1,4 @@
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 // *** Validate request to login to this site.
 if (!isset($_SESSION)) {
@@ -49,16 +17,20 @@ if (isset($_POST['username'])) {
   $MM_redirectLoginSuccess = "index0.php";
   $MM_redirectLoginFailed = "index.php";
   $MM_redirecttoReferrer = false;
-  mysql_select_db($database_utopia, $utopia);
-  	
-  $LoginRS__query=sprintf("SELECT username, password, level FROM users WHERE username=%s AND password=%s",
-  GetSQLValueString($loginUsername, "text"), GetSQLValueString($password, "text")); 
-   
-  $LoginRS = mysql_query($LoginRS__query, $utopia) or die(mysql_error());
-  $loginFoundUser = mysql_num_rows($LoginRS);
-  if ($loginFoundUser) {
-    
-    $loginStrGroup  = mysql_result($LoginRS,0,'level');
+
+  try {
+      $pdo = get_db_connection('utopia');
+  } catch (PDOException $e) {
+      // Handle connection error gracefully
+      die("Database connection failed: " . $e->getMessage());
+  }
+
+  $stmt = $pdo->prepare("SELECT username, password, level FROM users WHERE username=?");
+  $stmt->execute([$loginUsername]);
+  $user = $stmt->fetch();
+
+  if ($user && password_verify($password, $user['password'])) {
+    $loginStrGroup  = $user['level'];
     
 	if (PHP_VERSION >= 5.1) {session_regenerate_id(true);} else {session_regenerate_id();}
     //declare two session variables and assign them
@@ -69,9 +41,11 @@ if (isset($_POST['username'])) {
       $MM_redirectLoginSuccess = $_SESSION['PrevUrl'];	
     }
     header("Location: " . $MM_redirectLoginSuccess );
+    exit;
   }
   else {
     header("Location: ". $MM_redirectLoginFailed );
+    exit;
   }
 }
 ?>
@@ -104,7 +78,7 @@ body {
 <table width="99%" border="0" align="center">
   <tbody>
     <tr>
-      <td align="center" valign="middle"><img src="aqarr.jpg" width="289" height="214" alt=""/></td>
+      <td align="center" valign="middle"><img src="aqarr.jpg" width="289" height="214" alt="A house"/></td>
     </tr>
   </tbody>
 </table>
@@ -113,8 +87,8 @@ body {
     <td colspan="2" align="center" valign="middle" bgcolor="#C9C9C9"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
   </tr>
   <tr>
-    <td width="94%" align="center" valign="middle" bgcolor="#314ECE" class="yelow"> <h2><span style="font-family: aclonica; font-style: normal; font-weight: 400;"><img src="titleP.png" width="311" height="50" alt=""/></span></h2></td>
-    <td width="6%" align="center" valign="middle" bgcolor="#314ECE" class="yelow"><span style="color: #314ECE"><a href="www.tagoutsource.com"><img src="logo TOS.png" width="53" height="50" alt=""/></a></span></td>
+    <td width="94%" align="center" valign="middle" bgcolor="#314ECE" class="yelow"> <h2><span style="font-family: aclonica; font-style: normal; font-weight: 400;"><img src="titleP.png" width="311" height="50" alt="Good News Marketing"/></span></h2></td>
+    <td width="6%" align="center" valign="middle" bgcolor="#314ECE" class="yelow"><span style="color: #314ECE"><a href="www.tagoutsource.com"><img src="logo TOS.png" width="53" height="50" alt="Tag Outsource"/></a></span></td>
   </tr>
   <tr>
     <td colspan="2" align="right" valign="middle" bgcolor="#C9C9C9"><marquee align="middle" direction="right" style="color: #314ECE" dir="rtl">
@@ -129,7 +103,7 @@ body {
        
         </tr>
         <tr>
-          <td colspan="2" rowspan="3"><img src="user.png" width="126" height="122" /></td>
+          <td colspan="2" rowspan="3"><img src="user.png" width="126" height="122" alt="User icon"/></td>
           <td width="32%" colspan="2" align="center" valign="middle"><span id="sprytextfield1">
             <label for="username"></label>
             <input name="username" type="text" tabindex="1" id="username" size="50" />

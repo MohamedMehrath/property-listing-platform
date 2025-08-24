@@ -1,10 +1,4 @@
-<?php require_once('Connections/utopia.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php //virtual('Connections/utopia.php'); ?>
-<?php //virtual('Connections/goodnews.php'); ?>
-<?php //virtual('Connections/goodnews1.php'); ?>
-
+<?php require_once('Connections/db.php'); ?>
 <?php
 error_reporting( error_reporting() & ~E_NOTICE );
 error_reporting( error_reporting() & ~E_WARNING );
@@ -31,7 +25,14 @@ if (!isset($_SESSION)) {
   $_SESSION['status'] = $_POST['status'];
 }
 
-mysql_query("SET NAMES 'utf8'");
+try {
+    $pdo_utopia = get_db_connection('utopia');
+    $pdo_goodnews1 = get_db_connection('goodnews1');
+} catch (PDOException $e) {
+    // Handle connection error gracefully
+    die("Database connection failed: " . $e->getMessage());
+}
+
 ini_set('max_execution_time', 0);
 // ** Logout the current user. **
 $logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
@@ -56,80 +57,10 @@ if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
 }
 ?>
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
 $currentPage = $_SERVER["PHP_SELF"];
 
-mysql_select_db($database_utopia, $utopia);
-$query_Qcity = "SELECT distinct cityname FROM city ORDER BY cityname DESC";
-$Qcity = mysql_query($query_Qcity, $utopia) or die(mysql_error());
-$row_Qcity = mysql_fetch_assoc($Qcity);
-$totalRows_Qcity = mysql_num_rows($Qcity);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qmarhala = "SELECT distinct marhalaname FROM marhala ORDER BY marhalaname Asc";
-$Qmarhala = mysql_query($query_Qmarhala, $utopia) or die(mysql_error());
-$row_Qmarhala = mysql_fetch_assoc($Qmarhala);
-$totalRows_Qmarhala = mysql_num_rows($Qmarhala);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qdoor = "SELECT distinct doorname FROM door ORDER BY doorname Asc";
-$Qdoor = mysql_query($query_Qdoor, $utopia) or die(mysql_error());
-$row_Qdoor = mysql_fetch_assoc($Qdoor);
-$totalRows_Qdoor = mysql_num_rows($Qdoor);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qaqar_type = "SELECT distinct aqar_type_name FROM aqar_type_t";
-$Qaqar_type = mysql_query($query_Qaqar_type, $utopia) or die(mysql_error());
-$row_Qaqar_type = mysql_fetch_assoc($Qaqar_type);
-$totalRows_Qaqar_type = mysql_num_rows($Qaqar_type);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qamalya_type = "SELECT distinct amalya_type_name FROM amalya_type_t";
-$Qamalya_type = mysql_query($query_Qamalya_type, $utopia) or die(mysql_error());
-$row_Qamalya_type = mysql_fetch_assoc($Qamalya_type);
-$totalRows_Qamalya_type = mysql_num_rows($Qamalya_type);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qatatus = "SELECT distinct status_name FROM status_t";
-$Qatatus = mysql_query($query_Qatatus, $utopia) or die(mysql_error());
-$row_Qatatus = mysql_fetch_assoc($Qatatus);
-$totalRows_Qatatus = mysql_num_rows($Qatatus);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qtashteeb = "SELECT distinct tashteeb_name FROM tashteeb_t";
-$Qtashteeb = mysql_query($query_Qtashteeb, $utopia) or die(mysql_error());
-$row_Qtashteeb = mysql_fetch_assoc($Qtashteeb);
-$totalRows_Qtashteeb = mysql_num_rows($Qtashteeb);
+$dropdown_data = get_dropdown_data($pdo_utopia);
+extract($dropdown_data);
 
 $maxRows_Recordsetmomz = 5;
 $pageNum_Recordsetmomz = 0;
@@ -138,213 +69,240 @@ if (isset($_GET['pageNum_Recordsetmomz'])) {
 }
 $startRow_Recordsetmomz = $pageNum_Recordsetmomz * $maxRows_Recordsetmomz;
 
-mysql_select_db($database_utopia, $utopia);
 $query_Recordsetmomz = "SELECT * FROM udata WHERE momz = 1 ORDER BY entry_date DESC";
-$query_limit_Recordsetmomz = sprintf("%s LIMIT %d, %d", $query_Recordsetmomz, $startRow_Recordsetmomz, $maxRows_Recordsetmomz);
-$Recordsetmomz = mysql_query($query_limit_Recordsetmomz, $utopia) or die(mysql_error());
-$row_Recordsetmomz = mysql_fetch_assoc($Recordsetmomz);
+$stmt_momz = $pdo_utopia->prepare($query_Recordsetmomz . " LIMIT ?, ?");
+$stmt_momz->execute([$startRow_Recordsetmomz, $maxRows_Recordsetmomz]);
+$Recordsetmomz = $stmt_momz->fetchAll();
+$row_Recordsetmomz = $Recordsetmomz[0] ?? null;
 
 if (isset($_GET['totalRows_Recordsetmomz'])) {
   $totalRows_Recordsetmomz = $_GET['totalRows_Recordsetmomz'];
 } else {
-  $all_Recordsetmomz = mysql_query($query_Recordsetmomz);
-  $totalRows_Recordsetmomz = mysql_num_rows($all_Recordsetmomz);
+  $all_Recordsetmomz = $pdo_utopia->query($query_Recordsetmomz);
+  $totalRows_Recordsetmomz = $all_Recordsetmomz->rowCount();
 }
 $totalPages_Recordsetmomz = ceil($totalRows_Recordsetmomz/$maxRows_Recordsetmomz)-1;
 
-mysql_select_db($database_utopia, $utopia);
 $query_Recordset9 = "SELECT * FROM website";
-$Recordset9 = mysql_query($query_Recordset9, $goodnews1) or die(mysql_error());
-$row_Recordset9 = mysql_fetch_assoc($Recordset9);
-$totalRows_Recordset9 = mysql_num_rows($Recordset9);
+$Recordset9 = $pdo_goodnews1->query($query_Recordset9)->fetchAll();
+$row_Recordset9 = $Recordset9[0] ?? null;
+$totalRows_Recordset9 = count($Recordset9);
 
-mysql_select_db($database_goodnews1, $goodnews1);
 $query_Recordsetmomz_new = "SELECT * FROM udata WHERE momz = 1";
-$Recordsetmomz_new = mysql_query($query_Recordsetmomz_new, $goodnews1) or die(mysql_error());
-$row_Recordsetmomz_new = mysql_fetch_assoc($Recordsetmomz_new);
-$totalRows_Recordsetmomz_new = mysql_num_rows($Recordsetmomz_new);
+$Recordsetmomz_new = $pdo_goodnews1->query($query_Recordsetmomz_new)->fetchAll();
+$row_Recordsetmomz_new = $Recordsetmomz_new[0] ?? null;
+$totalRows_Recordsetmomz_new = count($Recordsetmomz_new);
 
-mysql_select_db($database_utopia, $utopia);
 $madena_Recordset1 = "-1";
 $aqartype_Recordset1="-1";
  
 // test top100
 if(isset($_POST['top100']) && $_POST['top100'] != ""){
-  $top_Recordset1 = $_POST['top100'];
-  $ord = $_POST['ordby'] . " " . $_POST['ordtype'];
-  $query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY %s LIMIT %d",$ord, GetSQLValueString($top_Recordset1,"integer"));
-  $R17 = mysql_query($query17, $utopia) or die(mysql_error());
-		
-	}else{
+    $allowed_order_by = ['entry_date', 'update_date', 'code', 'matloob'];
+    $allowed_order_type = ['ASC', 'DESC'];
+
+    $order_by = $_POST['ordby'] ?? 'entry_date';
+    $order_type = strtoupper($_POST['ordtype'] ?? 'DESC');
+    $top_Recordset1 = (int)$_POST['top100'];
+
+    if (in_array($order_by, $allowed_order_by) && in_array($order_type, $allowed_order_type)) {
+        $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY $order_by $order_type LIMIT ?";
+        $stmt17 = $pdo_utopia->prepare($query17);
+        $stmt17->execute([$top_Recordset1]);
+    } else {
+        // Fallback to a default, safe query if input is invalid
+        $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY entry_date DESC LIMIT ?";
+        $stmt17 = $pdo_utopia->prepare($query17);
+        $stmt17->execute([$top_Recordset1]);
+    }
+}else{
 		
 // 1- Tmadena
 if (isset($_POST['madena']) && $_POST['madena'] !="") {
 
  $madena_Recordset1 = implode(',',$_POST['madena']);
  
-  $query1 = sprintf("CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata WHERE FIND_IN_SET(madena,%s) ", GetSQLValueString($madena_Recordset1, "text"));
-  $R1 = mysql_query($query1, $utopia) or die(mysql_error());
+  $query1 = "CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata WHERE FIND_IN_SET(madena,?) ";
+  $stmt1 = $pdo_utopia->prepare($query1);
+  $stmt1->execute([$madena_Recordset1]);
 }else{
-	$query1 = sprintf("CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata");
-	$R1 = mysql_query($query1, $utopia) or die(mysql_error());
+	$query1 = "CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata";
+	$pdo_utopia->exec($query1);
 	}
 // 2- taqartype
 if (isset($_POST['aqar_type']) && $_POST['aqar_type'] !="") {
 	$aqartype_Recordset1 = implode(',',$_POST['aqar_type']);
-  $query2 = sprintf("CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena WHERE FIND_IN_SET(aqar_type,%s)", GetSQLValueString($aqartype_Recordset1, "text"));
-  $R2 = mysql_query($query2, $utopia) or die(mysql_error());
+  $query2 = "CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena WHERE FIND_IN_SET(aqar_type,?)";
+  $stmt2 = $pdo_utopia->prepare($query2);
+  $stmt2->execute([$aqartype_Recordset1]);
 }else{
-	$query2 = sprintf("CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena");
-	$R2 = mysql_query($query2, $utopia) or die(mysql_error());
+	$query2 = "CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena";
+	$pdo_utopia->exec($query2);
 	}
 // 3- tamalyatype
 if (isset($_POST['amalya_type']) && $_POST['amalya_type'] !="") {
   $amalyatype_Recordset1 = implode(',',$_POST['amalya_type']);
  
-  $query3 = sprintf("CREATE TEMPORARY TABLE tamalyatype as SELECT * FROM taqartype WHERE FIND_IN_SET(amalya_type,%s)", GetSQLValueString($amalyatype_Recordset1, "text"));
-  $R3 = mysql_query($query3, $utopia) or die(mysql_error());
+  $query3 = "CREATE TEMPORARY TABLE tamalyatype as SELECT * FROM taqartype WHERE FIND_IN_SET(amalya_type,?)";
+  $stmt3 = $pdo_utopia->prepare($query3);
+  $stmt3->execute([$amalyatype_Recordset1]);
 }else{
-	$query3 = sprintf("CREATE TEMPORARY TABLE tamalyatype as SELECT * FROM taqartype");
-	$R3 = mysql_query($query3, $utopia) or die(mysql_error());
+	$query3 = "CREATE TEMPORARY TABLE tamalyatype as SELECT * FROM taqartype";
+	$pdo_utopia->exec($query3);
 	}	
 // 4- tstatus
 if (isset($_POST['status']) && $_POST['status'] !="") {
   $status_Recordset1 = implode(',',$_POST['status']);
-  $query4 = sprintf("CREATE TEMPORARY TABLE tstatus as SELECT * FROM tamalyatype WHERE FIND_IN_SET(status,%s)", GetSQLValueString($status_Recordset1, "text"));
-  $R4 = mysql_query($query4, $utopia) or die(mysql_error());
+  $query4 = "CREATE TEMPORARY TABLE tstatus as SELECT * FROM tamalyatype WHERE FIND_IN_SET(status,?)";
+  $stmt4 = $pdo_utopia->prepare($query4);
+  $stmt4->execute([$status_Recordset1]);
 }else{
-	$query4 = sprintf("CREATE TEMPORARY TABLE tstatus as SELECT * FROM tamalyatype");
-	$R4 = mysql_query($query4, $utopia) or die(mysql_error());
+	$query4 = "CREATE TEMPORARY TABLE tstatus as SELECT * FROM tamalyatype";
+	$pdo_utopia->exec($query4);
 	}	
 // 5- ttashteeb
 if (isset($_POST['tashteeb']) && $_POST['tashteeb'] !="") {
   $tashteeb_Recordset1 = implode(',',$_POST['tashteeb']);
-  $query5 = sprintf("CREATE TEMPORARY TABLE ttashteeb as SELECT * FROM tstatus WHERE FIND_IN_SET(tashteeb,%s)", GetSQLValueString($tashteeb_Recordset1, "text"));
-  $R5 = mysql_query($query5, $utopia) or die(mysql_error());
+  $query5 = "CREATE TEMPORARY TABLE ttashteeb as SELECT * FROM tstatus WHERE FIND_IN_SET(tashteeb,?)";
+  $stmt5 = $pdo_utopia->prepare($query5);
+  $stmt5->execute([$tashteeb_Recordset1]);
 }else{
-	$query5 = sprintf("CREATE TEMPORARY TABLE ttashteeb as SELECT * FROM tstatus");
-	$R5 = mysql_query($query5, $utopia) or die(mysql_error());
+	$query5 = "CREATE TEMPORARY TABLE ttashteeb as SELECT * FROM tstatus";
+	$pdo_utopia->exec($query5);
 	}	
 // 6- tmatloob
 if ((isset($_POST['price_from']) && $_POST['price_from'] !="") && (isset($_POST['price_to']) && $_POST['price_to'] !="")) {
   $pricefrom_Recordset1 = $_POST['price_from'];
   $priceto_Recordset1 = $_POST['price_to'];
-  $query6 = sprintf("CREATE TEMPORARY TABLE tmatloob as SELECT * FROM ttashteeb WHERE matloob BETWEEN %s AND %s", GetSQLValueString($pricefrom_Recordset1, "text"),GetSQLValueString($priceto_Recordset1, "text"));
-  $R6 = mysql_query($query6, $utopia) or die(mysql_error());
+  $query6 = "CREATE TEMPORARY TABLE tmatloob as SELECT * FROM ttashteeb WHERE matloob BETWEEN ? AND ?";
+  $stmt6 = $pdo_utopia->prepare($query6);
+  $stmt6->execute([$pricefrom_Recordset1, $priceto_Recordset1]);
 }else{
-	$query6 = sprintf("CREATE TEMPORARY TABLE tmatloob as SELECT * FROM ttashteeb");
-	$R6 = mysql_query($query6, $utopia) or die(mysql_error());
+	$query6 = "CREATE TEMPORARY TABLE tmatloob as SELECT * FROM ttashteeb";
+	$pdo_utopia->exec($query6);
 	}	
 // 7- tmbnamesaha
 if ((isset($_POST['mesaha_from']) && $_POST['mesaha_from'] !="") && (isset($_POST['mesaha_to']) && $_POST['mesaha_to'] !="")) {
   $mesahafrom_Recordset1 = $_POST['mesaha_from'];
   $mesahato_Recordset1 = $_POST['mesaha_to'];
-  $query7 = sprintf("CREATE TEMPORARY TABLE tmbnamesaha as SELECT * FROM tmatloob WHERE mbna_mesaha BETWEEN %s AND %s", GetSQLValueString($mesahafrom_Recordset1, "text"),GetSQLValueString($mesahato_Recordset1, "text"));
-  $R7 = mysql_query($query7, $utopia) or die(mysql_error());
+  $query7 = "CREATE TEMPORARY TABLE tmbnamesaha as SELECT * FROM tmatloob WHERE mbna_mesaha BETWEEN ? AND ?";
+  $stmt7 = $pdo_utopia->prepare($query7);
+  $stmt7->execute([$mesahafrom_Recordset1, $mesahato_Recordset1]);
 }else{
-	$query7 = sprintf("CREATE TEMPORARY TABLE tmbnamesaha as SELECT * FROM tmatloob");
-	$R7 = mysql_query($query7, $utopia) or die(mysql_error());
+	$query7 = "CREATE TEMPORARY TABLE tmbnamesaha as SELECT * FROM tmatloob";
+	$pdo_utopia->exec($query7);
 	}		
 // 8- thadeka
 if ((isset($_POST['hadeka_from']) && $_POST['hadeka_from'] !="") && (isset($_POST['hadeka_to']) && $_POST['hadeka_to'] !="")) {
   $hadekafrom_Recordset1 = $_POST['hadeka_from'];
   $hadekato_Recordset1 = $_POST['hadeka_to'];
-  $query8 = sprintf("CREATE TEMPORARY TABLE thadeka as SELECT * FROM tmbnamesaha WHERE hadeka BETWEEN %s AND %s", GetSQLValueString($hadekafrom_Recordset1, "text"),GetSQLValueString($hadekato_Recordset1, "text"));
-  $R8 = mysql_query($query8, $utopia) or die(mysql_error());
+  $query8 = "CREATE TEMPORARY TABLE thadeka as SELECT * FROM tmbnamesaha WHERE hadeka BETWEEN ? AND ?";
+  $stmt8 = $pdo_utopia->prepare($query8);
+  $stmt8->execute([$hadekafrom_Recordset1, $hadekato_Recordset1]);
 }else{
-	$query8 = sprintf("CREATE TEMPORARY TABLE thadeka as SELECT * FROM tmbnamesaha");
-	$R8 = mysql_query($query8, $utopia) or die(mysql_error());
+	$query8 = "CREATE TEMPORARY TABLE thadeka as SELECT * FROM tmbnamesaha";
+	$pdo_utopia->exec($query8);
 	}
 // 9- Tcode
 if (isset($_POST['code']) && $_POST['code'] !="") {
   $code_Recordset1 = $_POST['code'];
-  $query9 = sprintf("CREATE TEMPORARY TABLE tcode as SELECT * FROM thadeka WHERE code = %s", GetSQLValueString($code_Recordset1, "text"));
-  $R9 = mysql_query($query9, $utopia) or die(mysql_error());
+  $query9 = "CREATE TEMPORARY TABLE tcode as SELECT * FROM thadeka WHERE code = ?";
+  $stmt9 = $pdo_utopia->prepare($query9);
+  $stmt9->execute([$code_Recordset1]);
 }else{
-	$query9 = sprintf("CREATE TEMPORARY TABLE tcode as SELECT * FROM thadeka");
-	$R9 = mysql_query($query9, $utopia) or die(mysql_error());
+	$query9 = "CREATE TEMPORARY TABLE tcode as SELECT * FROM thadeka";
+	$pdo_utopia->exec($query9);
 	}		
 // 10- Tmarhala
 if (isset($_POST['marhala']) && $_POST['marhala'] !="") {
   $marhala_Recordset1 = implode(',',$_POST['marhala']);
-  $query10 = sprintf("CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode WHERE FIND_IN_SET(marhala,%s)", GetSQLValueString($marhala_Recordset1, "text"));
-  $R10 = mysql_query($query10, $utopia) or die(mysql_error());
+  $query10 = "CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode WHERE FIND_IN_SET(marhala,?)";
+  $stmt10 = $pdo_utopia->prepare($query10);
+  $stmt10->execute([$marhala_Recordset1]);
 }else{
-	$query10 = sprintf("CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode");
-	$R10 = mysql_query($query10, $utopia) or die(mysql_error());
+	$query10 = "CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode";
+	$pdo_utopia->exec($query10);
 	}		
 // 11- Tnamozg
 if (isset($_POST['namozg']) && $_POST['namozg'] !="") {
   $namozg_Recordset1 = implode(',',$_POST['namozg']);
-  $query11 = sprintf("CREATE TEMPORARY TABLE tnamozg as SELECT * FROM tmarhala WHERE FIND_IN_SET(namozg,%s)", GetSQLValueString($namozg_Recordset1, "text"));
-  $R11 = mysql_query($query11, $utopia) or die(mysql_error());
+  $query11 = "CREATE TEMPORARY TABLE tnamozg as SELECT * FROM tmarhala WHERE FIND_IN_SET(namozg,?)";
+  $stmt11 = $pdo_utopia->prepare($query11);
+  $stmt11->execute([$namozg_Recordset1]);
 }else{
-	$query11 = sprintf("CREATE TEMPORARY TABLE tnamozg as SELECT * FROM tmarhala");
-	$R11 = mysql_query($query11, $utopia) or die(mysql_error());
+	$query11 = "CREATE TEMPORARY TABLE tnamozg as SELECT * FROM tmarhala";
+	$pdo_utopia->exec($query11);
 	}		
 // 12- Tcustomername
 if (isset($_POST['customer_name']) && $_POST['customer_name'] !="") {
   $customer_name_Recordset1 = $_POST['customer_name'];
-  $query12 = sprintf("CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tnamozg WHERE cust_name LIKE %s", GetSQLValueString("%".$customer_name_Recordset1."%", "text"));
-  $R12 = mysql_query($query12, $utopia) or die(mysql_error());
+  $query12 = "CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tnamozg WHERE cust_name LIKE ?";
+  $stmt12 = $pdo_utopia->prepare($query12);
+  $stmt12->execute(["%".$customer_name_Recordset1."%"]);
 }else{
-	$query12 = sprintf("CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tnamozg");
-	$R12 = mysql_query($query12, $utopia) or die(mysql_error());
+	$query12 = "CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tnamozg";
+	$pdo_utopia->exec($query12);
 	}		
 // 13- Tmobile
 if (isset($_POST['mobile']) && $_POST['mobile'] !="") {
   $mobile_Recordset1 = $_POST['mobile'];
-  $query13 = sprintf("CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername WHERE mobile LIKE %s OR telephone LIKE %s OR whatsapp LIKE %s", GetSQLValueString($mobile_Recordset1, "text"),GetSQLValueString($mobile_Recordset1, "text"),GetSQLValueString($mobile_Recordset1, "text"));
-  $R13 = mysql_query($query13, $utopia) or die(mysql_error());
+  $query13 = "CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername WHERE mobile LIKE ? OR telephone LIKE ? OR whatsapp LIKE ?";
+  $stmt13 = $pdo_utopia->prepare($query13);
+  $stmt13->execute([$mobile_Recordset1, $mobile_Recordset1, $mobile_Recordset1]);
 }else{
-	$query13 = sprintf("CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername");
-	$R13 = mysql_query($query13, $utopia) or die(mysql_error());
+	$query13 = "CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername";
+	$pdo_utopia->exec($query13);
 	}	
 
 // 14- Tgeem
 if (isset($_POST['geem']) && $_POST['geem'] !="") {
   $geem_Recordset1 = $_POST['geem'];
-  $query14 = sprintf("CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile WHERE geem = %s", GetSQLValueString($geem_Recordset1, "text"));
-  $R14 = mysql_query($query14, $utopia) or die(mysql_error());
+  $query14 = "CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile WHERE geem = ?";
+  $stmt14 = $pdo_utopia->prepare($query14);
+  $stmt14->execute([$geem_Recordset1]);
 }else{
-	$query14 = sprintf("CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile");
-	$R14 = mysql_query($query14, $utopia) or die(mysql_error());
+	$query14 = "CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile";
+	$pdo_utopia->exec($query14);
 	}
 		
 // 15- Tain
 if (isset($_POST['ain']) && $_POST['ain'] !="") {
   $ain_Recordset1 = $_POST['ain'];
-  $query15 = sprintf("CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem WHERE ain = %s", GetSQLValueString($ain_Recordset1, "text"));
-  $R15 = mysql_query($query15, $utopia) or die(mysql_error());
+  $query15 = "CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem WHERE ain = ?";
+  $stmt15 = $pdo_utopia->prepare($query15);
+  $stmt15->execute([$ain_Recordset1]);
 }else{
-	$query15 = sprintf("CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem");
-	$R15 = mysql_query($query15, $utopia) or die(mysql_error());
+	$query15 = "CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem";
+	$pdo_utopia->exec($query15);
 	}
 // 16- Tdoor
 if (isset($_POST['door']) && $_POST['door'] !="") {
   $door_Recordset1 = implode(',',$_POST['door']);
-  $query16 = sprintf("CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain WHERE FIND_IN_SET(door,%s)", GetSQLValueString($door_Recordset1, "text"));
-  $R16 = mysql_query($query16, $utopia) or die(mysql_error());
+  $query16 = "CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain WHERE FIND_IN_SET(door,?)";
+  $stmt16 = $pdo_utopia->prepare($query16);
+  $stmt16->execute([$door_Recordset1]);
 }else{
-	$query16 = sprintf("CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain");
-	$R16 = mysql_query($query16, $utopia) or die(mysql_error());
+	$query16 = "CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain";
+	$pdo_utopia->exec($query16);
 	}
 		
 // 17- Twow
 if (isset($_POST['wow']) && $_POST['wow'] !="") {
   $wow_Recordset1 = $_POST['wow'];
-  $query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor WHERE wow = %s ORDER BY update_date DESC", GetSQLValueString($wow_Recordset1, "text"));
-  $R17 = mysql_query($query17, $utopia) or die(mysql_error());
+  $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor WHERE wow = ? ORDER BY update_date DESC";
+  $stmt17 = $pdo_utopia->prepare($query17);
+  $stmt17->execute([$wow_Recordset1]);
 }else{
 	
-	$query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor ORDER BY update_date DESC");
-	$R17 = mysql_query($query17, $utopia) or die(mysql_error());
+	$query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor ORDER BY update_date DESC";
+	$pdo_utopia->exec($query17);
 	}	
 }// end of top100
-$query_Recordset1 = sprintf(" SELECT * FROM twow");
-$Recordset1 = mysql_query($query_Recordset1, $utopia) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
+$query_Recordset1 = " SELECT * FROM twow";
+$Recordset1_stmt = $pdo_utopia->query($query_Recordset1);
+$Recordset1 = $Recordset1_stmt->fetchAll();
+$row_Recordset1 = $Recordset1[0] ?? null;
+$totalRows_Recordset1 = count($Recordset1);
 
 
 $maxRows_Recordset1 = 50;
@@ -437,7 +395,7 @@ body {
                       <td><strong>نوع العملية</strong></td>
                       </tr>
                     <tr>
-                      <td><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>">ا لمزيد من التفاصيل<img src="aqarr.jpg" width="40" height="40" alt=""/></a></td>
+                      <td><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>">ا لمزيد من التفاصيل<img src="aqarr.jpg" width="40" height="40" alt="Property details"/></a></td>
                       <td><?php echo $row_Recordsetmomz_new['aqd_total']; ?></td>
                       <td><strong>اجمالى العقد</strong></td>
                       <td colspan="2" align="center"><?php echo $row_Recordsetmomz_new['matloob']; ?></td>
@@ -774,8 +732,8 @@ do {
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">نوع العقار</span></strong></td>
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">العملية</span></strong></td>
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">المدينة</span></strong></td>
-            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">الكود<a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="صور العقار" width="30" height="20" /></a></span></strong></td>
-            <td align="center" valign="middle" bgcolor="#327900"><a href="./update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" width="25" height="25" alt=""/></a></td>
+            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">الكود<a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="View images for property <?php echo $row_Recordset1['code']; ?>" width="30" height="20" /></a></span></strong></td>
+            <td align="center" valign="middle" bgcolor="#327900"><a href="./update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" width="25" height="25" alt="Add alert for property <?php echo $row_Recordset1['code']; ?>"/></a></td>
             </tr>
           <tr>
             <td colspan="3" align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['ain']; ?></span></td>
@@ -813,7 +771,7 @@ do {
             <td colspan="2" align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['namozg']; ?></span></td>
             </tr>
           <tr>
-            <td colspan="11" align="center" valign="middle"><img src="linebar.png" width="280" height="13" alt=""/><img src="linebar.png" width="280" height="13" alt=""/><img src="linebar.png" width="280" height="13" alt=""/></td>
+            <td colspan="11" align="center" valign="middle"><img src="linebar.png" width="280" height="13" alt="Decorative line"/><img src="linebar.png" width="280" height="13" alt="Decorative line"/><img src="linebar.png" width="280" height="13" alt="Decorative line"/></td>
             <td align="center" valign="middle" bgcolor="#2D6C01" onmouseover="bgcolor=#ECDC49">&nbsp;</td>
             </tr>
         </tbody>

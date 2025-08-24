@@ -135,7 +135,7 @@ function MM_swapImage() { //v3.0
     <td align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
   </tr>
   <tr>
-    <td align="center" valign="middle" bgcolor="#314ECE" class="yelow"> <h2 style="font-family: aclonica; font-style: normal; font-weight: 400;"><img src="titleP.png" width="311" height="50" alt=""/></h2></td>
+    <td align="center" valign="middle" bgcolor="#314ECE" class="yelow"> <h2 style="font-family: aclonica; font-style: normal; font-weight: 400;"><img src="titleP.png" width="311" height="50" alt="Good News Marketing"/></h2></td>
   </tr>
   <tr>
     <td bgcolor="#CFD0EB"><marquee align="middle" direction="right" style="color: #314ECE" dir="rtl"> برنامج ادارة التسويق العقارى يعمل على اكثر من جهاز من خلال الشبكات الداخلية او الانترنت .. للحصول على افضل اداء يرجى تشغيله على متصفح فايرفوكس اعلى من الاصدار 30 .. فى حالة توقف البرنامج لكثرة المستخدمين او البيانات او البحث الشامل قم بعمل تنشيط للصفحة ..</marquee></td>
@@ -144,9 +144,9 @@ function MM_swapImage() { //v3.0
     <td bgcolor="#FFFFFF"><table width="70%" border="0" align="center" dir="rtl">
       <tbody>
         <tr>
-          <td align="center" valign="middle"><a href="index1.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image4','','L1_1.png',1)"><img src="L1.png" alt="" width="311" height="347" id="Image4" /></a></td>
-          <td align="center" valign="middle"><a href="index_offices.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image5','','L2_1.png',1)"><img src="L2.png" alt="" width="311" height="347" id="Image5" /></a></td>
-          <td align="center" valign="middle"><a href="index_matlob.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','L3_1.png',1)"><img src="L3.png" alt="" width="311" height="347" id="Image6" /></a></td>
+          <td align="center" valign="middle"><a href="index1.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image4','','L1_1.png',1)"><img src="L1.png" alt="Main Index" width="311" height="347" id="Image4" /></a></td>
+          <td align="center" valign="middle"><a href="index_offices.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image5','','L2_1.png',1)"><img src="L2.png" alt="Offices Index" width="311" height="347" id="Image5" /></a></td>
+          <td align="center" valign="middle"><a href="index_matlob.php" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image6','','L3_1.png',1)"><img src="L3.png" alt="Matlob Index" width="311" height="347" id="Image6" /></a></td>
         </tr>
       </tbody>
     </table></td>

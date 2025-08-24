@@ -97,7 +97,7 @@ $totalRows_Recordset1 = mysql_num_rows($Recordset1);
 </head>
 
 <body>
-<p><a href="./view_all.php"><strong>رجوع</strong></a> | <img src="./print.jpg" width="74" height="61" onclick="window.print() " /></p>
+<p><a href="./view_all.php"><strong>رجوع</strong></a> | <img src="./print.jpg" alt="Print this page" width="74" height="61" onclick="window.print() " /></p>
 <table width="60%" border="0">
   <tbody>
     <tr>
