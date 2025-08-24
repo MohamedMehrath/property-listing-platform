@@ -1,0 +1,244 @@
+<?php require_once('Connections/goodnews1.php'); ?>
+<?php require_once('Connections/goodnews.php'); ?>
+<?php
+//initialize the session
+if (!isset($_SESSION)) {
+  session_start();
+}
+mysql_query("SET NAMES 'utf8'");
+// ** Logout the current user. **
+$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
+if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
+  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
+}
+
+if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
+  //to fully log out a visitor we need to clear the session varialbles
+  $_SESSION['MM_Username'] = NULL;
+  $_SESSION['MM_UserGroup'] = NULL;
+  $_SESSION['PrevUrl'] = NULL;
+  unset($_SESSION['MM_Username']);
+  unset($_SESSION['MM_UserGroup']);
+  unset($_SESSION['PrevUrl']);
+	
+  $logoutGoTo = "index.php";
+  if ($logoutGoTo) {
+    header("Location: $logoutGoTo");
+    exit;
+  }
+}
+?>
+<?php
+if (!function_exists("GetSQLValueString")) {
+function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
+{
+  if (PHP_VERSION < 6) {
+    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
+  }
+
+  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
+
+  switch ($theType) {
+    case "text":
+      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+      break;    
+    case "long":
+    case "int":
+      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
+      break;
+    case "double":
+      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
+      break;
+    case "date":
+      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+      break;
+    case "defined":
+      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
+      break;
+  }
+  return $theValue;
+}
+}
+
+$currentPage = $_SERVER["PHP_SELF"];
+
+$maxRows_Recordset1 = 10;
+$pageNum_Recordset1 = 0;
+if (isset($_GET['pageNum_Recordset1'])) {
+  $pageNum_Recordset1 = $_GET['pageNum_Recordset1'];
+}
+$startRow_Recordset1 = $pageNum_Recordset1 * $maxRows_Recordset1;
+
+mysql_select_db($database_goodnews1, $goodnews1);
+$query_Recordset1 = "SELECT * FROM aqar_need ORDER BY call_date DESC, aqar_need.entry_date ASC";
+$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
+$Recordset1 = mysql_query($query_limit_Recordset1, $goodnews1) or die(mysql_error());
+$row_Recordset1 = mysql_fetch_assoc($Recordset1);
+
+if (isset($_GET['totalRows_Recordset1'])) {
+  $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
+} else {
+  $all_Recordset1 = mysql_query($query_Recordset1);
+  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
+}
+$totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
+
+$queryString_Recordset1 = "";
+if (!empty($_SERVER['QUERY_STRING'])) {
+  $params = explode("&", $_SERVER['QUERY_STRING']);
+  $newParams = array();
+  foreach ($params as $param) {
+    if (stristr($param, "pageNum_Recordset1") == false && 
+        stristr($param, "totalRows_Recordset1") == false) {
+      array_push($newParams, $param);
+    }
+  }
+  if (count($newParams) != 0) {
+    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
+  }
+}
+$queryString_Recordset1 = sprintf("&totalRows_Recordset1=%d%s", $totalRows_Recordset1, $queryString_Recordset1);
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>العقارات المطلوبة</title>
+<style type="text/css">
+body,td,th {
+	color: #17036B;
+}
+body {
+	background-color: #FFFFFF;
+}
+.gr {
+	color: #008000;
+}
+.gr td {
+	color: #008000;
+}
+.yelow {
+	color: #17036B;
+}
+</style>
+<style type="text/css">
+.black {	color: #000;
+}
+</style>
+<link href="./blue.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+.yelow1 {color: #17036B;
+	font-style: normal;
+}
+</style>
+</head>
+
+<body>
+<table width="90%" border="0" align="center">
+  <tr>
+    <td colspan="3" align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
+  </tr>
+  <tr>
+    <td align="right" valign="middle" bgcolor="#FFFEBF">&nbsp;</td>
+    <td width="20%" align="center" valign="middle" bgcolor="#FFFEBF" class="blue"><strong>العقارات المطلوبة</strong></td>
+    <td width="8%" align="right" valign="middle" bgcolor="#FFFEBF"><a href="<?php echo $logoutAction ?>"><img src="logout.png" width="28" height="28" alt="خروج" /></a></td>
+  </tr>
+  <tr>
+    <td colspan="2"><p><a href="insert_matlob.php"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">ادخال عقار مطلوب</span></strong></a></p>
+      <table width="38%" border="0">
+        <tr>
+          <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, $totalPages_Recordset1, $queryString_Recordset1); ?>">الاخير</a></td>
+          <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, max(0, $pageNum_Recordset1 - 1), $queryString_Recordset1); ?>">السابق</a></td>
+          <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, min($totalPages_Recordset1, $pageNum_Recordset1 + 1), $queryString_Recordset1); ?>">التالى</a></td>
+          <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, 0, $queryString_Recordset1); ?>">الاول</a></td>
+          <td align="right" bgcolor="#FFFFFF"><strong>يوجد <?php echo $totalRows_Recordset1 ?> بيان</strong></td>
+        </tr>
+      </table></td>
+    <td rowspan="4" align="center" valign="top"><iframe src="menu_side.php" name="menu_side" width="250" height="1000" align="top" scrolling="auto" frameborder="0" id="menu_side">Banner</iframe></td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top" bgcolor="#FFFFFF">&nbsp;
+      <?php do { ?>
+    <?php if ($totalRows_Recordset1 > 0) { // Show if recordset not empty ?>
+        <table width="95%" border="0" align="center">
+        <tr class="gr">
+          <td width="12%" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow"><span class="black"><?php echo $row_Recordset1['budget']; ?></span></td>
+          <td width="17%" align="left" valign="middle" bgcolor="#FFFFFF" class="yelow"><strong>السعر Budget</strong></td>
+          <td width="17%" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow"><span class="black"><?php echo $row_Recordset1['mesaha']; ?></span></td>
+          <td width="13%" align="left" valign="middle" bgcolor="#FFFFFF" class="yelow"><strong>المســـاحـــة</strong></td>
+          <td width="4%" rowspan="2" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow">&nbsp;</td>
+          <td width="18%" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow"><?php echo $row_Recordset1['aqar_type_other']; ?></td>
+          <td width="13%" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow"><?php echo $row_Recordset1['aqar_type']; ?></td>
+          <td width="5%" align="center" valign="middle" bgcolor="#FFFFFF" class="yelow"><strong class="yelow">نوع العقار</strong></td>
+          <td width="1%" colspan="3" rowspan="5" align="center" valign="middle" bgcolor="#F0EDEE" class="yelow"><p>&nbsp;</p>            <p>&nbsp;</p></td>
+          </tr>
+        <tr class="black">
+          <td colspan="3" align="center" valign="middle" class="black"><?php echo $row_Recordset1['details']; ?></td>
+          <td align="center" valign="middle" class="black"><?php echo $row_Recordset1['address']; ?></td>
+          <td colspan="2" align="center" valign="middle" class="black"><?php echo $row_Recordset1['aqar_type_other']; ?></td>
+          </tr>
+        <tr>
+          <td align="center" valign="middle" class="yelow"><span class="black"><?php echo $row_Recordset1['mobile']; ?></span></td>
+          <td align="left" valign="middle" class="yelow"><strong>موبـــــــايل</strong></td>
+          <td width="17%" align="center" valign="middle" class="yelow"><span class="black"><?php echo $row_Recordset1['telephone']; ?></span></td>
+          <td colspan="2" align="left" valign="middle" class="yelow"><strong>تليفـــــــــون</strong></td>
+          <td align="right" valign="middle" class="yelow"><span class="gr"><span class="black"><?php echo $row_Recordset1['cust_name']; ?></span></span></td>
+          <td colspan="2" align="left" valign="middle" class="yelow"><strong>اســــــم العمــــــــيل</strong></td>
+          </tr>
+        <tr>
+          <td colspan="2" rowspan="2" align="center" valign="middle" class="black"><table width="73%" border="0">
+            <tr class="yelow">
+              <td align="center" valign="middle"><a href="./print_matlob.php?code=<?php echo $row_Recordset1['code']; ?>" target="_new"><img src="./print-icon.png" alt="ewre" width="70" height="28" /></a></td>
+              <td align="center" valign="middle"><a href="./update_matlob.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" width="40" height="40" alt=""/></a></td>
+              <td align="center" valign="middle">&nbsp;</td>
+              <td align="center" valign="middle"><a href="update_matlob.php?code=<?php echo $row_Recordset1['code']; ?>"><img src="edit.gif" alt="er" width="70" height="28" /></a></td>
+            </tr>
+          </table></td>
+          <td colspan="5" align="right" valign="middle" class="black"><?php echo $row_Recordset1['action_history']; ?></td>
+          <td align="center" valign="middle" class="black"><strong class="yelow">المتابعة</strong></td>
+          </tr>
+        <tr>
+          <td align="center" valign="middle" class="yelow"><?php echo $row_Recordset1['tashteeb_other']; ?></td>
+          <td align="center" valign="middle" class="yelow"><?php echo $row_Recordset1['tashteeb']; ?></td>
+          <td align="center" valign="middle" class="yelow"><strong class="yelow">التشطيب</strong></td>
+          <td align="center" valign="middle" class="yelow"><?php echo $row_Recordset1['madena_other']; ?></td>
+          <td align="center" valign="middle" class="yelow"><?php echo $row_Recordset1['madena']; ?></td>
+          <td align="center" valign="middle" class="yelow"><strong class="yelow">المدينة</strong></td>
+        </tr>
+        <tr>
+          <td colspan="11"><hr /></td>
+        </tr>
+      </table>
+      <?php } // Show if recordset not empty ?>
+<?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?></td>
+  </tr>
+  <tr>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2"><table width="38%" border="0">
+      <tr>
+        <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, $totalPages_Recordset1, $queryString_Recordset1); ?>">الاخير</a></td>
+        <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, max(0, $pageNum_Recordset1 - 1), $queryString_Recordset1); ?>">السابق</a></td>
+        <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, min($totalPages_Recordset1, $pageNum_Recordset1 + 1), $queryString_Recordset1); ?>">التالى</a></td>
+        <td bgcolor="#FFFFFF"><a href="<?php printf("%s?pageNum_Recordset1=%d%s", $currentPage, 0, $queryString_Recordset1); ?>">الاول</a></td>
+        <td align="right" bgcolor="#FFFFFF"><strong>يوجد <?php echo $totalRows_Recordset1 ?> بيان</strong></td>
+        </tr>
+      </table>
+      <?php if ($totalRows_Recordset1 == 0) { // Show if recordset empty ?>
+        <table width="20%" border="0">
+          <tr>
+            <td align="center"><strong>عفوا لا توجد نتيجة للبحث الحالى</strong></td>
+          </tr>
+        </table>
+    <?php } // Show if recordset empty ?></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="copyright.php" name="copyright" width="900" align="top" scrolling="no" frameborder="0" sandbox="allow-top-navigation" id="copyright">Banner</iframe></td>
+  </tr>
+</table>
+</body>
+</html>
+<?php
+mysql_free_result($Recordset1);
+?>

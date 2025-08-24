@@ -1,0 +1,572 @@
+<?php require_once('Connections/goodnews1.php'); ?>
+<?php require_once('Connections/goodnews.php'); ?>
+<?php
+//initialize the session
+if (!isset($_SESSION)) {
+  session_start();
+}
+mysql_query("SET NAMES 'utf8'");
+// ** Logout the current user. **
+$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
+if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
+  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
+}
+
+if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
+  //to fully log out a visitor we need to clear the session varialbles
+  $_SESSION['MM_Username'] = NULL;
+  $_SESSION['MM_UserGroup'] = NULL;
+  $_SESSION['PrevUrl'] = NULL;
+  unset($_SESSION['MM_Username']);
+  unset($_SESSION['MM_UserGroup']);
+  unset($_SESSION['PrevUrl']);
+	
+  $logoutGoTo = "index.php";
+  if ($logoutGoTo) {
+    header("Location: $logoutGoTo");
+    exit;
+  }
+}
+?>
+<?php
+if (!function_exists("GetSQLValueString")) {
+function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
+{
+  if (PHP_VERSION < 6) {
+    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
+  }
+
+  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
+
+  switch ($theType) {
+    case "text":
+      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+      break;    
+    case "long":
+    case "int":
+      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
+      break;
+    case "double":
+      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
+      break;
+    case "date":
+      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
+      break;
+    case "defined":
+      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
+      break;
+  }
+  return $theValue;
+}
+}
+
+$currentPage = $_SERVER["PHP_SELF"];
+
+$maxRows_Recordset1 = 10;
+$pageNum_Recordset1 = 0;
+if (isset($_GET['pageNum_Recordset1'])) {
+  $pageNum_Recordset1 = $_GET['pageNum_Recordset1'];
+}
+$startRow_Recordset1 = $pageNum_Recordset1 * $maxRows_Recordset1;
+
+$colname_Recordset1 = "-1";
+if (isset($_GET['code'])) {
+  $colname_Recordset1 = $_GET['code'];
+}
+mysql_select_db($database_goodnews1, $goodnews1);
+$query_Recordset1 = sprintf("SELECT * FROM udata WHERE code = %s ORDER BY entry_date DESC", GetSQLValueString($colname_Recordset1, "text"));
+$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
+$Recordset1 = mysql_query($query_limit_Recordset1, $goodnews1) or die(mysql_error());
+$row_Recordset1 = mysql_fetch_assoc($Recordset1);
+
+if (isset($_GET['totalRows_Recordset1'])) {
+  $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
+} else {
+  $all_Recordset1 = mysql_query($query_Recordset1);
+  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
+}
+$totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
+
+$queryString_Recordset1 = "";
+if (!empty($_SERVER['QUERY_STRING'])) {
+  $params = explode("&", $_SERVER['QUERY_STRING']);
+  $newParams = array();
+  foreach ($params as $param) {
+    if (stristr($param, "pageNum_Recordset1") == false && 
+        stristr($param, "totalRows_Recordset1") == false) {
+      array_push($newParams, $param);
+    }
+  }
+  if (count($newParams) != 0) {
+    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
+  }
+}
+$queryString_Recordset1 = sprintf("&totalRows_Recordset1=%d%s", $totalRows_Recordset1, $queryString_Recordset1);
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>تفاصيل العقار</title>
+<style type="text/css">
+body,td,th {
+	color: #17036B;
+	font-weight: normal;
+	font-size: 16px;
+}
+body {
+	background-color: #FFFFFF;
+}
+.gr {
+	color: #008000;
+}
+.gr td {
+	color: #008000;
+}
+.yelow {
+	color: #17036B;
+	font-style: normal;
+}
+</style>
+<style type="text/css">
+.black {	color: #000;
+}
+</style>
+<link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+</head>
+
+<body>
+<table width="99%" border="0">
+    <tr>
+      <td width="93%" align="center"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
+      <td width="4%">&nbsp;</td>
+    </tr>
+    <tr>
+      <td colspan="2" bgcolor="#FFFEDC"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">كشف تفاصيل بيانات العقار </span></strong></td>
+    </tr>
+    <tr>
+      <td rowspan="2" valign="top"><div class="panel-group" id="accordion2" dir="rtl">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion2" href="#collapseOne2">بيانــــات العقــــــار الأساســـــــــية</a></h4>
+            <table width="99%" border="0">
+              <tbody>
+                <tr>
+                  <td width="9%"><img src="searching-for-a-house.png" width="39" height="35" alt=""/></td>
+                  <td width="41%">&nbsp;</td>
+                  <td width="27%"><a href="update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" width="40" height="40" alt=""/></a></td>
+                  <td width="4%"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الكود</span></strong></td>
+                  <td width="19%"><span style="font-size: 16pt"><?php echo $row_Recordset1['code']; ?></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="collapseOne2" class="panel-collapse collapse in">
+            <div class="panel-body">
+              <table width="80%" border="0" align="right" dir="ltr">
+                <tbody>
+                  <tr>
+                    <td width="10%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">شقة - و</span></strong></td>
+                    <td width="11%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">عمارة - ع</span></strong></td>
+                    <td width="11%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مجموعة  -ج</span></strong></td>
+                    <td width="23%">&nbsp;</td>
+                    <td width="23%" align="right"><?php echo $row_Recordset1['aqar_type_other']; ?></td>
+                    <td width="13%" align="right"><?php echo $row_Recordset1['aqar_type']; ?></td>
+                    <td width="9%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">نوع العقار</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td align="center"><?php echo $row_Recordset1['wow']; ?></td>
+                    <td align="center"><?php echo $row_Recordset1['ain']; ?></td>
+                    <td align="center"><?php echo $row_Recordset1['geem']; ?></td>
+                    <td>&nbsp;</td>
+                    <td align="right">&nbsp;</td>
+                    <td align="right"><?php echo $row_Recordset1['madena']; ?></td>
+                    <td align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المدينة</span></strong></td>
+                  </tr>
+                </tbody>
+              </table>
+              <table width="80%" border="0" align="right" dir="ltr">
+                <tbody>
+                  <tr>
+                    <td width="10%" align="center" bgcolor="#FFFFFF">&nbsp;</td>
+                    <td width="11%" align="right" bgcolor="#FFFFFF"><?php echo $row_Recordset1['status']; ?></td>
+                    <td width="11%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الحــــــــالة</span></strong></td>
+                    <td width="23%" align="right"><?php echo $row_Recordset1['amalya_type']; ?></td>
+                    <td width="23%" align="right" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">نوع العملــيـــــــة</span></strong></td>
+                    <td width="13%" align="right"><?php echo $row_Recordset1['namozg']; ?></td>
+                    <td width="9%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">نمـــوذج</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td align="center">&nbsp;</td>
+                    <td align="center">&nbsp;</td>
+                    <td align="center">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td align="right">&nbsp;</td>
+                    <td align="right"><?php echo $row_Recordset1['marhala']; ?></td>
+                    <td align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المرحــلة</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="7"><table width="50%" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900">
+                      <tbody>
+                        <tr>
+                          <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">عدد الحمامات</span></strong></td>
+                          <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">عدد الغرف</span></strong></td>
+                          <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الدور</span></strong></td>
+                          <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">التشطيب</span></strong></td>
+                        </tr>
+                        <tr>
+                          <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['WC']; ?></td>
+                          <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['rooms']; ?></td>
+                          <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['door']; ?></td>
+                          <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['tashteeb']; ?></td>
+                        </tr>
+                      </tbody>
+                    </table></td>
+                  </tr>
+                  <tr>
+                    <td colspan="7" align="right" bgcolor="#F5F3F4"><strong>العنـــــــــــــــــــــــوان</strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="7" align="right" valign="middle"><?php echo $row_Recordset1['address']; ?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo2">البيـــانــــات الثـــانــويــــة</a></h4>
+            <p><img src="aqarr.jpg" width="42" height="42" alt=""/></p>
+          </div>
+          <div id="collapseTwo2" class="panel-collapse collapse">
+            <div class="panel-body"><table width="99%" border="0" align="center">
+          <tbody>
+            <tr>
+              <td colspan="2"><table width="80%" border="0" align="right" dir="ltr">
+                <tbody>
+                  <tr>
+                    <td width="10%" align="center" bgcolor="#FFFFFF">&nbsp;</td>
+                    <td width="11%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">النـــادى</span></strong></td>
+                    <td width="11%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الحديقــــة</span></strong></td>
+                    <td width="23%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مساحة الأرض م2</span></strong></td>
+                    <td width="23%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مساحة المبانى م2</span></strong></td>
+                    <td width="13%" align="right"><?php echo $row_Recordset1['view_v']; ?></td>
+                    <td width="9%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الفيو View</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td align="center">&nbsp;</td>
+                    <td align="center"><?php echo $row_Recordset1['nady']; ?></td>
+                    <td align="center"><?php echo $row_Recordset1['hadeka']; ?></td>
+                    <td align="center"><?php echo $row_Recordset1['ard_mesaha']; ?></td>
+                    <td align="center"><?php echo $row_Recordset1['mbna_mesaha']; ?></td>
+                    <td align="right"><?php echo $row_Recordset1['ways']; ?></td>
+                    <td align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الاتجاه Way</span></strong></td>
+                  </tr>
+                </tbody>
+              </table>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <table width="80%" border="0" align="right">
+                  <tbody>
+                    <tr>
+                      <td width="100%"><table width="100%" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900" dir="ltr">
+                        <tbody>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الكمـــــــاليـــــــــــات</span></strong><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow"></span></strong></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['kmalyat']; ?></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">التفـــاصـــــــــيل</span></strong><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow"></span></strong></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['details']; ?></td>
+                          </tr>
+                        </tbody>
+                      </table></td>
+                    </tr>
+                  </tbody>
+                </table></td>
+              <td><p>&nbsp;</p>
+                <p>&nbsp;</p></td>
+            </tr>
+          </tbody>
+        </table></div>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion2" href="#collapseThree2">البيانـــــــات المالــــــية</a></h4>
+            <p><img src="money.png" width="45" height="46" alt=""/></p>
+          </div>
+          <div id="collapseThree2" class="panel-collapse collapse">
+            <div class="panel-body"><table width="99%" border="0" align="center">
+          <tbody>
+            <tr>
+              <td colspan="2"><table width="80%" border="1" align="right" cellpadding="0" cellspacing="0" bordercolor="#327900" dir="ltr">
+                <tbody>
+                  <tr>
+                    <td width="11%" align="center" valign="middle" bgcolor="#F5F3F4"><span class="black"><?php echo number_format($row_Recordset1['alover'])."ج.م."; ?></span></td>
+                    <td width="11%" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الأوفــــر</span></strong></td>
+                    <td width="23%" align="center" valign="middle" bgcolor="#F5F3F4"><span class="black"><?php echo number_format($row_Recordset1['aqd_total'])."ج.م."; ?></span></td>
+                    <td width="23%" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">إجمـــالى العقــــد</span></strong></td>
+                    <td width="13%" align="center" valign="middle" bgcolor="#F5F3F4"><span class="black"><?php echo number_format($row_Recordset1['matloob'])."ج.م."; ?></span></td>
+                    <td width="9%" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المطلوب</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td colspan="6" align="center"><table width="80%" border="0">
+                      <tbody>
+                        <tr>
+                          <td align="center"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">سعر المــــــتر</span></strong></td>
+                          <td align="center"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المتبـــــقى</span></strong></td>
+                          <td align="center"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المدفــــوع</span></strong></td>
+                        </tr>
+                        <tr>
+                          <td align="center"><?php echo number_format($row_Recordset1['meterprice'])." ج.م. "; ?></td>
+                          <td align="center"><span class="black"><?php echo number_format($row_Recordset1['motabaqi'])." ج.م. "; ?></span></td>
+                          <td align="center"><span class="black"><?php echo number_format($row_Recordset1['madfoo'])." ج.م. "; ?></span></td>
+                        </tr>
+                      </tbody>
+                    </table></td>
+                  </tr>
+                </tbody>
+              </table>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <table width="80%" border="0" align="right">
+                  <tbody>
+                    <tr>
+                      <td width="100%"><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900" dir="ltr">
+                        <tbody>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">قسط سنــــــــوى</span></strong><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow"></span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">قسط شهـــــرى</span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مدة التقســــــيط</span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مدة الإيجــــــــــار</span></strong></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo number_format($row_Recordset1['kest_year'])." ج.م. "; ?></span></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo number_format($row_Recordset1['kest_month'])." ج.م. "; ?></span></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['kest_modah']; ?></span></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['modah_ejar']; ?></span></td>
+                          </tr>
+                        </tbody>
+                      </table></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <table width="80%" border="0" align="right">
+                  <tbody>
+                    <tr>
+                      <td width="100%"><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900" dir="ltr">
+                        <tbody>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تــاريـــخ الاستــــــلام</span></strong><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow"></span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تاريـــــخ الحجــــز</span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><span class="black"><?php echo $row_Recordset1['wadyaa']; ?></span></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">الوديعــــة</span></strong></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['estlam']; ?></span></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['hagz']; ?></span></td>
+                            <td colspan="2" align="center" valign="middle" bgcolor="#FFFFFF">&nbsp;</td>
+                          </tr>
+                          <tr>
+                            <td colspan="2" align="center" valign="middle" bgcolor="#FFFFFF">&nbsp;</td>
+                            <td colspan="2" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مــــــلاحظــــــــــــــــات</span></strong></td>
+                          </tr>
+                          <tr>
+                            <td colspan="4" align="right" valign="middle" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['notes']; ?></span></td>
+                          </tr>
+                        </tbody>
+                      </table></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p></td>
+              <td>&nbsp;</td>
+            </tr>
+          </tbody>
+        </table></div>
+          </div>
+        </div>
+      </div>        <div class="panel-group" id="accordion3" dir="rtl">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion3" href="#collapseOne3">بيانــــــــات العمــــــيل</a></h4>
+              <p><img src="user.png" width="44" height="36" alt=""/></p>
+            </div>
+            <div id="collapseOne3" class="panel-collapse collapse in">
+              <div class="panel-body"><table width="99%" border="0" align="center" dir="ltr">
+          <tbody>
+            <tr>
+              <td width="19%" align="right" valign="middle" bgcolor="#FFFFFF">&nbsp;</td>
+              <td width="53%" align="right" valign="middle" bgcolor="#FFFEDC" style="font-size: 16pt"><table width="80%" border="0" align="right" cellpadding="0" bordercolor="#327900">
+                <tbody>
+                  <tr>
+                    <td width="80%" align="right" style="font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif"><span class="black"><?php echo $row_Recordset1['cust_name']; ?></span></td>
+                    <td width="20%" align="left" style="font-family: 'Gill Sans', 'Gill Sans MT', 'Myriad Pro', 'DejaVu Sans Condensed', Helvetica, Arial, sans-serif"><span class="black"><?php echo $row_Recordset1['cust_title']; ?></span></td>
+                  </tr>
+                </tbody>
+              </table></td>
+              <td width="24%" align="right" valign="middle" bgcolor="#FFFEDC" style="font-size: 16pt"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">بيـــــانـــــات العمــــــيل</span></strong></td>
+              <td width="4%">&nbsp;</td>
+            </tr>
+            <tr>
+              <td colspan="3"><table width="80%" border="0" align="right">
+                <tbody>
+                  <tr>
+                    <td align="center"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">ايميل<img src="web.png" width="40" height="40" alt=""/></span></strong></td>
+                    <td align="center"><img src="whatsapp.png" width="70" height="70" alt=""/></td>
+                    <td align="center"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">موبايل</span></strong><img src="mob.png" width="40" height="40" alt=""/></td>
+                    <td align="right"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تليفون</span></strong><img src="tel.png" width="40" height="40" alt=""/></td>
+                    <td width="9%" rowspan="2" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">للتواصل</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td align="center"><?php echo $row_Recordset1['email']; ?></td>
+                    <td width="24%" align="center"><?php echo $row_Recordset1['whatsapp']; ?></td>
+                    <td width="23%" align="center"><span class="black"><?php echo $row_Recordset1['mobile']; ?></span></td>
+                    <td width="22%" align="center"><span class="black"><?php echo $row_Recordset1['telephone']; ?></span></td>
+                  </tr>
+                </tbody>
+              </table>
+                <p>&nbsp;</p></td>
+              <td>&nbsp;</td>
+            </tr>
+          </tbody>
+        </table></div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion3" href="#collapseTwo3">بيانــــات الإدخــــال والمتابــــعة</a></h4>
+              <p><img src="dataentry.jpg" width="50" height="46" alt=""/></p>
+            </div>
+            <div id="collapseTwo3" class="panel-collapse collapse">
+              <div class="panel-body">
+           <table width="99%" border="0" align="center">
+          <tbody>
+            <tr>
+              <td colspan="2"><table width="80%" border="0" align="right" dir="ltr">
+                <tbody>
+                  <tr>
+                    <td width="3%" align="center" bgcolor="#FFFFFF">&nbsp;</td>
+                    <td width="23%" align="center" bgcolor="#F5F3F4"><span class="black"><?php echo $row_Recordset1['entry_date']; ?></span></td>
+                    <td width="12%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تاريخ الادخــال</span></strong></td>
+                    <td width="21%" align="center"><span class="black"><?php echo $row_Recordset1['log_date']; ?></span></td>
+                    <td width="18%" align="right"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تاريخ الدخول</span></strong></td>
+                    <td width="14%" align="right"><span class="black"><?php echo $row_Recordset1['modkhel']; ?></span></td>
+                    <td width="9%" align="center" bgcolor="#FFFFFF"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مدخل البيانات</span></strong></td>
+                  </tr>
+                  <tr>
+                    <td align="center">&nbsp;</td>
+                    <td align="center" bgcolor="#F5F3F4"><span class="black"><?php echo $row_Recordset1['update_date']; ?></span></td>
+                    <td align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تاريخ التعديل</span></strong></td>
+                    <td>&nbsp;</td>
+                    <td align="right"><span class="black"><?php echo $row_Recordset1['updater']; ?></span></td>
+                    <td colspan="2" align="right"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">آخر تعديل تم بواسطة </span></strong></td>
+                  </tr>
+                </tbody>
+              </table>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <table width="80%" border="0" align="right" dir="ltr">
+                  <tbody>
+                    <tr>
+                      <td width="63%" align="right" bgcolor="#FFFFFF"><span class="black"><?php echo $row_Recordset1['masdr']; ?></span></td>
+                      <td width="37%" align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المصدر</span></strong></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><span class="black"><?php echo $row_Recordset1['motabaa']; ?></span></td>
+                      <td align="center" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">المتابعة</span></strong></td>
+                    </tr>
+                    <tr>
+                      <td colspan="2"><table width="50%" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900">
+                        <tbody>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مكتب مصدر</span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تنبيه ؟</span></strong></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مميز ؟</span></strong></td>
+                            <td rowspan="3" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">سمـــــــــــــــات</span></strong></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><a href="./print_office.php?id=<?php echo $row_Recordset1['office_id'];?>" target="new"><?php echo $row_Recordset1['office_id']; ?></a></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><?php echo $row_Recordset1['remember']; ?></td>
+                            <td align="center" valign="middle" bgcolor="#F5F3F4"><?php echo $row_Recordset1['momz']; ?></td>
+                          </tr>
+                          <tr>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"></td>
+                            <td align="center" valign="middle" bgcolor="#FFFFFF"></td>
+                          </tr>
+                        </tbody>
+                      </table></td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="right" valign="middle"><p class="black">&nbsp;</p>
+                        <p class="black"><span class="green">Wednesday</span> _16/11/2016 11:18:41 pm</p></td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="center" valign="middle">&nbsp;</td>
+                    </tr>
+                    </tbody>
+                </table></td>
+              <td>&nbsp;</td>
+            </tr>
+          </tbody>
+        </table></div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion3" href="#collapseThree3">عملــــــــــيات</a></h4>
+            </div>
+            <div id="collapseThree3" class="panel-collapse collapse">
+              <div class="panel-body">
+              <table width="80%" border="0" align="right" dir="ltr">
+              <tbody>
+              <td width="6%" align="right" bgcolor="#F5F3F4"><a href="/aqarmarket/print_sheet_new.php?doLogout=true">Log out</a></td>
+                  <td width="6%" align="right" bgcolor="#F5F3F4"><a href="./update.php?code=<?php echo $row_Recordset1['code'];?>">تعديل</a></td>
+                      <td width="13%" align="right" bgcolor="#F5F3F4"><a href="print_sheet_images.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><strong>بيانات العقار بالصور</strong></a></td>
+                      <td width="3%" align="right" bgcolor="#F5F3F4">&nbsp;</td>
+                      <td width="36%" align="right" bgcolor="#F5F3F4"><span class="black">
+                      <a href="print_sheet.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./print.jpg" width="74" height="61"></a></span></td>
+                      <td align="right" bgcolor="#F5F3F4"><a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="صور العقار" width="72" height="47"></a></td>
+             </tbody> </table></div>
+            </div>
+          </div>
+      </div></td>
+      <td align="center" valign="top"><iframe src="menu_side.php" name="menu_side" width="250" height="1000" align="top" scrolling="auto" frameborder="0" id="menu_side">Banner</iframe></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td align="center"><iframe src="copyright.php" name="copyright" width="900" align="top" scrolling="no" frameborder="0" sandbox="allow-top-navigation" id="copyright">Banner</iframe></td>
+      <td>&nbsp;</td>
+    </tr>
+</table>
+<p><script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+  <script src="js/bootstrap.js" type="text/javascript"></script>
+</p>
+</body>
+</html>
+<?php
+mysql_free_result($Recordset1);
+?>

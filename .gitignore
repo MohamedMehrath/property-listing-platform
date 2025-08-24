@@ -1,0 +1,25 @@
+
+# Database credentials
+Connections/goodnews.php
+Connections/goodnews1.php
+Connections/utopia.php
+
+# Dreamweaver files
+_notes/
+_mmServerScripts/
+
+# Logs
+error_log
+
+# Compressed files
+aqarmarket.zip
+
+# Design files
+banner.psd
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Swap files
+*.swp
