@@ -60,9 +60,10 @@ $row_Recordset1 = $Recordset1[0] ?? null;
 if (isset($_GET['totalRows_Recordset1'])) {
   $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
 } else {
-    $stmt_total = $pdo->prepare($query_Recordset1);
+    $count_query = "SELECT COUNT(*) FROM udata WHERE tashteeb = ?";
+    $stmt_total = $pdo->prepare($count_query);
     $stmt_total->execute([$colname_Recordset1]);
-  $totalRows_Recordset1 = $stmt_total->rowCount();
+    $totalRows_Recordset1 = $stmt_total->fetchColumn();
 }
 $totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
 

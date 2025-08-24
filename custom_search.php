@@ -98,13 +98,24 @@ $aqartype_Recordset1="-1";
  
 // test top100
 if(isset($_POST['top100']) && $_POST['top100'] != ""){
-  $top_Recordset1 = $_POST['top100'];
-  $ord = $_POST['ordby'] . " " . $_POST['ordtype'];
-  $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY ? LIMIT ?";
-  $stmt17 = $pdo_utopia->prepare($query17);
-  $stmt17->execute([$ord, $top_Recordset1]);
-		
-	}else{
+    $allowed_order_by = ['entry_date', 'update_date', 'code', 'matloob'];
+    $allowed_order_type = ['ASC', 'DESC'];
+
+    $order_by = $_POST['ordby'] ?? 'entry_date';
+    $order_type = strtoupper($_POST['ordtype'] ?? 'DESC');
+    $top_Recordset1 = (int)$_POST['top100'];
+
+    if (in_array($order_by, $allowed_order_by) && in_array($order_type, $allowed_order_type)) {
+        $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY $order_by $order_type LIMIT ?";
+        $stmt17 = $pdo_utopia->prepare($query17);
+        $stmt17->execute([$top_Recordset1]);
+    } else {
+        // Fallback to a default, safe query if input is invalid
+        $query17 = "CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY entry_date DESC LIMIT ?";
+        $stmt17 = $pdo_utopia->prepare($query17);
+        $stmt17->execute([$top_Recordset1]);
+    }
+}else{
 		
 // 1- Tmadena
 if (isset($_POST['madena']) && $_POST['madena'] !="") {

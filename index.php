@@ -25,11 +25,11 @@ if (isset($_POST['username'])) {
       die("Database connection failed: " . $e->getMessage());
   }
 
-  $stmt = $pdo->prepare("SELECT username, password, level FROM users WHERE username=? AND password=?");
-  $stmt->execute([$loginUsername, $password]);
+  $stmt = $pdo->prepare("SELECT username, password, level FROM users WHERE username=?");
+  $stmt->execute([$loginUsername]);
   $user = $stmt->fetch();
 
-  if ($user) {
+  if ($user && password_verify($password, $user['password'])) {
     $loginStrGroup  = $user['level'];
     
 	if (PHP_VERSION >= 5.1) {session_regenerate_id(true);} else {session_regenerate_id();}

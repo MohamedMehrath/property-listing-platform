@@ -1,9 +1,8 @@
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 if (!isset($_SESSION)) {
   session_start();
 }
-mysql_query("SET NAMES 'utf8'");
 $MM_authorizedUsers = "admin";
 $MM_donotCheckaccess = "false";
 
@@ -46,51 +45,28 @@ if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers,
 }
 ?>
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
 $editFormAction = $_SERVER['PHP_SELF'];
 if (isset($_SERVER['QUERY_STRING'])) {
   $editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
 }
 
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
-  $insertSQL = sprintf("INSERT INTO users (username, password, `level`, notes) VALUES (%s, %s, %s, %s)",
-                       GetSQLValueString($_POST['username'], "text"),
-                       GetSQLValueString($_POST['password'], "text"),
-                       GetSQLValueString($_POST['level'], "text"),
-                       GetSQLValueString($_POST['notes'], "text"));
+    try {
+        $pdo = get_db_connection('utopia');
+    } catch (PDOException $e) {
+        die("Database connection failed: " . $e->getMessage());
+    }
 
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
+    $hashed_password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
+    $insertSQL = "INSERT INTO users (username, password, `level`, notes) VALUES (?, ?, ?, ?)";
+    $stmt = $pdo->prepare($insertSQL);
+    $stmt->execute([
+        $_POST['username'],
+        $hashed_password,
+        $_POST['level'],
+        $_POST['notes']
+    ]);
 
   $insertGoTo = "user_view.php";
   if (isset($_SERVER['QUERY_STRING'])) {
@@ -98,25 +74,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
     $insertGoTo .= $_SERVER['QUERY_STRING'];
   }
   header(sprintf("Location: %s", $insertGoTo));
+  exit;
 }
-
-$currentPage = $_SERVER["PHP_SELF"];
-
-$queryString_Recordset1 = "";
-if (!empty($_SERVER['QUERY_STRING'])) {
-  $params = explode("&", $_SERVER['QUERY_STRING']);
-  $newParams = array();
-  foreach ($params as $param) {
-    if (stristr($param, "pageNum_Recordset1") == false && 
-        stristr($param, "totalRows_Recordset1") == false) {
-      array_push($newParams, $param);
-    }
-  }
-  if (count($newParams) != 0) {
-    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
-  }
-}
-
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -168,7 +127,7 @@ body {
       <form id="form1" name="form1" method="POST" action="<?php echo $editFormAction; ?>">
         <table width="80%" border="0" align="right">
           <tr class="gr">
-            <td colspan="4" rowspan="2" align="center" valign="middle" bgcolor="#FFFFFF"><img src="user.png" width="128" height="89" alt=""/></td>
+            <td colspan="4" rowspan="2" align="center" valign="middle" bgcolor="#FFFFFF"><img src="user.png" width="128" height="89" alt="User icon"/></td>
             <td width="14%" align="center" valign="middle" bgcolor="#FFFFFF" class="gr"><strong>مستوى الحماية</strong></td>
             <td width="25%" align="center" valign="middle" bgcolor="#FFFFFF"><input name="username" tabindex="1" type="text" id="username" size="30" /></td>
             <td width="8%" colspan="2" align="center" valign="middle" bgcolor="#FFFFFF" class="gr"><strong>اسم المستخدم</strong><strong></strong></td>
@@ -219,4 +178,3 @@ var spryselect1 = new Spry.Widget.ValidationSelect("spryselect1", {validateOn:["
 </script>
 </body>
 </html>
-
