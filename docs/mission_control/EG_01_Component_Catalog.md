@@ -27,6 +27,6 @@ $authService->login('username', 'password');
 - `methodOrProperty2`: Description of what it does.
 
 **Dependencies:**
-- `[e.g., Database Connection, jQuery 1.11.1, SpryAssets.js]`
+- `[e.g., Database Connection, jQuery 1.11.1, SpryAssets/SpryAccordion.js]`
 
 ---
