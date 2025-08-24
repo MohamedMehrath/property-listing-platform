@@ -1,255 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-if (!isset($_SESSION)) {
-  session_start();
-}
-mysql_query("SET NAMES 'utf8'");
-$MM_authorizedUsers = "admin,editor";
-$MM_donotCheckaccess = "false";
-
-// *** Restrict Access To Page: Grant or deny access to this page
-function isAuthorized($strUsers, $strGroups, $UserName, $UserGroup) { 
-  // For security, start by assuming the visitor is NOT authorized. 
-  $isValid = False; 
-
-  // When a visitor has logged into this site, the Session variable MM_Username set equal to their username. 
-  // Therefore, we know that a user is NOT logged in if that Session variable is blank. 
-  if (!empty($UserName)) { 
-    // Besides being logged in, you may restrict access to only certain users based on an ID established when they login. 
-    // Parse the strings into arrays. 
-    $arrUsers = Explode(",", $strUsers); 
-    $arrGroups = Explode(",", $strGroups); 
-    if (in_array($UserName, $arrUsers)) { 
-      $isValid = true; 
-    } 
-    // Or, you may restrict access to only certain users based on their username. 
-    if (in_array($UserGroup, $arrGroups)) { 
-      $isValid = true; 
-    } 
-    if (($strUsers == "") && false) { 
-      $isValid = true; 
-    } 
-  } 
-  return $isValid; 
-}
-
-$MM_restrictGoTo = "./not_access.php";
-if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers, $_SESSION['MM_Username'], $_SESSION['MM_UserGroup'])))) {   
-  $MM_qsChar = "?";
-  $MM_referrer = $_SERVER['PHP_SELF'];
-  if (strpos($MM_restrictGoTo, "?")) $MM_qsChar = "&";
-  if (isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0) 
-  $MM_referrer .= "?" . $_SERVER['QUERY_STRING'];
-  $MM_restrictGoTo = $MM_restrictGoTo. $MM_qsChar . "accesscheck=" . urlencode($MM_referrer);
-  header("Location: ". $MM_restrictGoTo); 
-  exit;
-}
-//?>
-<?php
-//initialize the session
-if (!isset($_SESSION)) {
-  session_start();
-}
-
-// ** Logout the current user. **
-$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
-if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
-  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
-  //to fully log out a visitor we need to clear the session varialbles
-  $_SESSION['MM_Username'] = NULL;
-  $_SESSION['MM_UserGroup'] = NULL;
-  $_SESSION['PrevUrl'] = NULL;
-  unset($_SESSION['MM_Username']);
-  unset($_SESSION['MM_UserGroup']);
-  unset($_SESSION['PrevUrl']);
-	
-  $logoutGoTo = "./index.php";
-  if ($logoutGoTo) {
-    header("Location: $logoutGoTo");
-    exit;
-  }
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$editFormAction = $_SERVER['PHP_SELF'];
-if (isset($_SERVER['QUERY_STRING'])) {
-  $editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
-  $insertSQL = sprintf("INSERT INTO udata (code, madena, madena_other, aqar_type, aqar_type_other, namozg, geem, ain, wow, address, ard_mesaha, mbna_mesaha, matloob, aqd_total, kest_modah, madfoo, alover, kest_year, kest_month, tashteeb, hagz, estlam, nady, wadyaa, notes, cust_title, cust_name, telephone, mobile, masdr, entry_date, modkhel, update_date, motabaa, amalya_type, status, marhala, hadeka, updater, door, modah_ejar, motabaqi, view_v, momz, rooms, WC, ways, meterprice, kmalyat, email, whatsapp, remember, details, office_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                       GetSQLValueString($_POST['code'], "text"),
-                       GetSQLValueString($_POST['madena'], "text"),
-                       GetSQLValueString($_POST['madena_other'], "text"),
-                       GetSQLValueString($_POST['aqar_type'], "text"),
-                       GetSQLValueString($_POST['aqar_type_other'], "text"),
-                       GetSQLValueString($_POST['namozg'], "text"),
-                       GetSQLValueString($_POST['geem'], "text"),
-                       GetSQLValueString($_POST['ain'], "text"),
-                       GetSQLValueString($_POST['wow'], "text"),
-                       GetSQLValueString($_POST['address'], "text"),
-                       GetSQLValueString($_POST['ard_masaha'], "double"),
-                       GetSQLValueString($_POST['mbna_mesaha'], "double"),
-                       GetSQLValueString($_POST['matloob'], "int"),
-                       GetSQLValueString($_POST['aqd_total'], "int"),
-                       GetSQLValueString($_POST['kest_modah'], "int"),
-                       GetSQLValueString($_POST['madfoo'], "int"),
-                       GetSQLValueString($_POST['alover'], "int"),
-                       GetSQLValueString($_POST['kest_year'], "int"),
-                       GetSQLValueString($_POST['kest_month'], "int"),
-                       GetSQLValueString($_POST['tashteeb'], "text"),
-                       GetSQLValueString($_POST['hagz'], "text"),
-                       GetSQLValueString($_POST['estlam'], "text"),
-                       GetSQLValueString($_POST['nady'], "text"),
-                       GetSQLValueString($_POST['wadyaa'], "text"),
-                       GetSQLValueString($_POST['notes'], "text"),
-                       GetSQLValueString($_POST['laqab'], "text"),
-                       GetSQLValueString($_POST['cust_name'], "text"),
-                       GetSQLValueString($_POST['telephone'], "text"),
-                       GetSQLValueString($_POST['mobile'], "text"),
-                       GetSQLValueString($_POST['masdr'], "text"),
-                       GetSQLValueString($_POST['entry_date'], "date"),
-                       GetSQLValueString($_POST['modkhel'], "text"),
-                       GetSQLValueString($_POST['update_date'], "date"),
-                       GetSQLValueString($_POST['motabaa'], "text"),
-                       GetSQLValueString($_POST['amalya_type'], "text"),
-                       GetSQLValueString($_POST['status'], "text"),
-                       GetSQLValueString($_POST['marhala'], "text"),
-                       GetSQLValueString($_POST['hadeka'], "text"),
-                       GetSQLValueString($_POST['updater'], "text"),
-                       GetSQLValueString($_POST['door'], "text"),
-                       GetSQLValueString($_POST['modah_ejar'], "text"),
-                       GetSQLValueString($_POST['motabaqi'], "text"),
-                       GetSQLValueString($_POST['view_v'], "text"),
-                       GetSQLValueString(isset($_POST['momz']) ? "true" : "", "defined","1","0"),
-                       GetSQLValueString($_POST['rooms'], "text"),
-                       GetSQLValueString($_POST['wc'], "text"),
-                       GetSQLValueString($_POST['ways'], "text"),
-                       GetSQLValueString($_POST['meterprice'], "text"),
-                       GetSQLValueString($_POST['kmalyat'], "text"),
-                       GetSQLValueString($_POST['email'], "text"),
-                       GetSQLValueString($_POST['whatsapp'], "text"),
-                       GetSQLValueString(isset($_POST['remember']) ? "true" : "", "defined","1","0"),
-                       GetSQLValueString($_POST['details'], "text"),
-                       GetSQLValueString($_POST['officeid'], "int"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "insert.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Qcity = "SELECT distinct cityname FROM city ORDER BY city.cityname desc";
-$Qcity = mysql_query($query_Qcity, $goodnews1) or die(mysql_error());
-$row_Qcity = mysql_fetch_assoc($Qcity);
-$totalRows_Qcity = mysql_num_rows($Qcity);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Qaqar_type = "SELECT distinct aqar_type_name FROM aqar_type_t";
-$Qaqar_type = mysql_query($query_Qaqar_type, $goodnews1) or die(mysql_error());
-$row_Qaqar_type = mysql_fetch_assoc($Qaqar_type);
-$totalRows_Qaqar_type = mysql_num_rows($Qaqar_type);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_QQamalya_type = "SELECT distinct amalya_type_name FROM amalya_type_t";
-$QQamalya_type = mysql_query($query_QQamalya_type, $goodnews1) or die(mysql_error());
-$row_QQamalya_type = mysql_fetch_assoc($QQamalya_type);
-$totalRows_QQamalya_type = mysql_num_rows($QQamalya_type);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Qtashteeb = "SELECT distinct tashteeb_name FROM tashteeb_t";
-$Qtashteeb = mysql_query($query_Qtashteeb, $goodnews1) or die(mysql_error());
-$row_Qtashteeb = mysql_fetch_assoc($Qtashteeb);
-$totalRows_Qtashteeb = mysql_num_rows($Qtashteeb);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Qstatus = "SELECT distinct status_name FROM status_t";
-$Qstatus = mysql_query($query_Qstatus, $goodnews1) or die(mysql_error());
-$row_Qstatus = mysql_fetch_assoc($Qstatus);
-$totalRows_Qstatus = mysql_num_rows($Qstatus);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = "SELECT max(code) FROM udata";
-$Recordset1 = mysql_query($query_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetmarhala = "SELECT distinct marhalaname FROM marhala ORDER BY marhalaname ASC";
-$Recordsetmarhala = mysql_query($query_Recordsetmarhala, $goodnews1) or die(mysql_error());
-$row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala);
-$totalRows_Recordsetmarhala = mysql_num_rows($Recordsetmarhala);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetdoor = "SELECT distinct doorname FROM door ORDER BY doorname ASC";
-$Recordsetdoor = mysql_query($query_Recordsetdoor, $goodnews1) or die(mysql_error());
-$row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor);
-$totalRows_Recordsetdoor = mysql_num_rows($Recordsetdoor);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetnamozg = "SELECT distinct namozgname FROM namozg ORDER BY namozgname ASC";
-$Recordsetnamozg = mysql_query($query_Recordsetnamozg, $goodnews1) or die(mysql_error());
-$row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg);
-$totalRows_Recordsetnamozg = mysql_num_rows($Recordsetnamozg);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetview = "SELECT distinct viewname FROM viewvv ORDER BY viewname ASC";
-$Recordsetview = mysql_query($query_Recordsetview, $goodnews1) or die(mysql_error());
-$row_Recordsetview = mysql_fetch_assoc($Recordsetview);
-$totalRows_Recordsetview = mysql_num_rows($Recordsetview);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetlaqab = "SELECT distinct laqab_name FROM laqab ORDER BY laqab_name ASC";
-$Recordsetlaqab = mysql_query($query_Recordsetlaqab, $goodnews1) or die(mysql_error());
-$row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab);
-$totalRows_Recordsetlaqab = mysql_num_rows($Recordsetlaqab);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Qoffice = "SELECT * FROM offices";
-$Qoffice = mysql_query($query_Qoffice, $goodnews1) or die(mysql_error());
-$row_Qoffice = mysql_fetch_assoc($Qoffice);
-$totalRows_Qoffice = mysql_num_rows($Qoffice);
+<?php require_once('insert_logic.php'); ?>
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -303,7 +52,7 @@ function addfee(){
   <tr>
     <td colspan="7" bgcolor="#FFFEBF"><?php echo $_SESSION['MM_Username'];?></td>
     <td width="14%" align="center" valign="middle" bgcolor="#FFFEBF" class="blue"><strong>شاشة ادخال البيانات</strong></td>
-    <td width="5%" align="center" valign="middle" bgcolor="#FFFEBF"><a href="<?php echo $logoutAction ?>"><img src="logout.png" alt="logout" width="28" height="28" /></a></td>
+    <td width="5%" align="center" valign="middle" bgcolor="#FFFEBF"><a href="<?php echo $logoutAction ?>"><img src="logout.png" alt="Logout" width="28" height="28" /></a></td>
   </tr>
   <tr>
     <td colspan="9" align="center" valign="middle" bgcolor="#FFFEBF"><hr /></td>
@@ -324,24 +73,15 @@ function addfee(){
                 <label for="madena"></label>
                 <select name="madena" tabindex="2" id="madena">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Qcity_rows as $row_Qcity): ?>
                   <option value="<?php echo $row_Qcity['cityname']?>"><?php echo $row_Qcity['cityname']?></option>
-                  <?php
-} while ($row_Qcity = mysql_fetch_assoc($Qcity));
-  $rows = mysql_num_rows($Qcity);
-  if($rows > 0) {
-      mysql_data_seek($Qcity, 0);
-	  $row_Qcity = mysql_fetch_assoc($Qcity);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
                 <span class="selectRequiredMsg">اختر المدينة.</span></span></td>
               <td width="16%" align="center" bgcolor="#9E9E9E"><strong>المــديـــــنــــة</strong></td>
               <td width="17%" align="right" bgcolor="#CCFF99"><span id="sprytextfield1">
                 <label for="code"></label>
-                <input name="code" type="text" id="code" tabindex="1" value="<?php echo $row_Recordset1['max(code)']+1; ?>"  />
+                <input name="code" type="text" id="code" tabindex="1" value="<?php echo $row_Recordset1['max_code']+1; ?>"  />
                 <span class="textfieldRequiredMsg">يلزم ادخال الكود.</span></span></td>
               <td width="8%" align="right" bgcolor="#CCFF99"><strong>الكــــــــود</strong></td>
             </tr>
@@ -356,41 +96,23 @@ do {
                 <label for="aqar_type"></label>
                 <select name="aqar_type" tabindex="3" id="aqar_type">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Qaqar_type_rows as $row_Qaqar_type): ?>
                   <option value="<?php echo $row_Qaqar_type['aqar_type_name']?>"><?php echo $row_Qaqar_type['aqar_type_name']?></option>
-                  <?php
-} while ($row_Qaqar_type = mysql_fetch_assoc($Qaqar_type));
-  $rows = mysql_num_rows($Qaqar_type);
-  if($rows > 0) {
-      mysql_data_seek($Qaqar_type, 0);
-	  $row_Qaqar_type = mysql_fetch_assoc($Qaqar_type);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
                 <span class="selectRequiredMsg">اختر نوع العقار.</span></span></td>
               <td align="center" bgcolor="#9E9E9E"><strong>نوع العقـــار</strong></td>
               <td colspan="2" align="right" bgcolor="#CCFF99">ادخل الكود حسب تكويد الشركة للعقارات</td>
               </tr>
             <tr>
-              <td colspan="3" rowspan="5" align="center" valign="middle"><img src="1_3.jpg" width="242" height="134" alt=""/></td>
+              <td colspan="3" rowspan="5" align="center" valign="middle"><img src="1_3.jpg" width="242" height="134" alt="Property image"/></td>
               <td align="right"><span id="spryselect7">
                 <label for="view_v2"></label>
                 <select name="view_v" id="view_v2">
                 <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Recordsetview_rows as $row_Recordsetview): ?>
                   <option value="<?php echo $row_Recordsetview['viewname']?>"><?php echo $row_Recordsetview['viewname']?></option>
-                  <?php
-} while ($row_Recordsetview = mysql_fetch_assoc($Recordsetview));
-  $rows = mysql_num_rows($Recordsetview);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetview, 0);
-	  $row_Recordsetview = mysql_fetch_assoc($Recordsetview);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
 </span></td>
               <td align="center" valign="middle" bgcolor="#9E9E9E"><strong>View الفيو</strong></td>
@@ -398,18 +120,9 @@ do {
                 <label for="namozg"></label>
                 <select name="namozg" id="namozg">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Recordsetnamozg_rows as $row_Recordsetnamozg): ?>
                   <option value="<?php echo $row_Recordsetnamozg['namozgname']?>"><?php echo $row_Recordsetnamozg['namozgname']?></option>
-                  <?php
-} while ($row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg));
-  $rows = mysql_num_rows($Recordsetnamozg);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetnamozg, 0);
-	  $row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
 </span></td>
               <td align="right" bgcolor="#9E9E9E"><strong>النمــــــوذج</strong></td>
@@ -421,18 +134,9 @@ do {
                 <label for="amalya_type"></label>
                 <select name="amalya_type" tabindex="5" id="amalya_type">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($QQamalya_type_rows as $row_QQamalya_type): ?>
                   <option value="<?php echo $row_QQamalya_type['amalya_type_name']?>"><?php echo $row_QQamalya_type['amalya_type_name']?></option>
-                  <?php
-} while ($row_QQamalya_type = mysql_fetch_assoc($QQamalya_type));
-  $rows = mysql_num_rows($QQamalya_type);
-  if($rows > 0) {
-      mysql_data_seek($QQamalya_type, 0);
-	  $row_QQamalya_type = mysql_fetch_assoc($QQamalya_type);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
                 <span class="selectRequiredMsg">اختر نوع العملية.</span></span></td>
               <td align="right" bgcolor="#9E9E9E"><strong>نوع العملية</strong></td>
@@ -444,18 +148,9 @@ do {
                 <label for="tashteeb"></label>
                 <select name="tashteeb" tabindex="6" id="tashteeb">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Qtashteeb_rows as $row_Qtashteeb): ?>
                   <option value="<?php echo $row_Qtashteeb['tashteeb_name']?>"><?php echo $row_Qtashteeb['tashteeb_name']?></option>
-                  <?php
-} while ($row_Qtashteeb = mysql_fetch_assoc($Qtashteeb));
-  $rows = mysql_num_rows($Qtashteeb);
-  if($rows > 0) {
-      mysql_data_seek($Qtashteeb, 0);
-	  $row_Qtashteeb = mysql_fetch_assoc($Qtashteeb);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
                 <span class="selectRequiredMsg">اختر نظام التشطيب.</span></span></td>
               <td align="right" bgcolor="#9E9E9E"><strong>التشــطــــيب</strong></td>
@@ -467,18 +162,9 @@ do {
                 <label for="marhala2"></label>
                 <select name="marhala" id="marhala2">
                 <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Recordsetmarhala_rows as $row_Recordsetmarhala): ?>
                   <option value="<?php echo $row_Recordsetmarhala['marhalaname']?>"><?php echo $row_Recordsetmarhala['marhalaname']?></option>
-                  <?php
-} while ($row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala));
-  $rows = mysql_num_rows($Recordsetmarhala);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetmarhala, 0);
-	  $row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
 </span></td>
               <td align="right" bgcolor="#9E9E9E"><strong>المــــرحـلة</strong></td>
@@ -490,18 +176,9 @@ do {
                 <label for="status"></label>
                 <select name="status" tabindex="8" id="status">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Qstatus_rows as $row_Qstatus): ?>
                   <option value="<?php echo $row_Qstatus['status_name']?>"><?php echo $row_Qstatus['status_name']?></option>
-                  <?php
-} while ($row_Qstatus = mysql_fetch_assoc($Qstatus));
-  $rows = mysql_num_rows($Qstatus);
-  if($rows > 0) {
-      mysql_data_seek($Qstatus, 0);
-	  $row_Qstatus = mysql_fetch_assoc($Qstatus);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
                 <span class="selectRequiredMsg">اختر حالة العقار.</span></span></td>
               <td align="right" bgcolor="#9E9E9E"><strong>الحــــــــالة</strong></td>
@@ -535,18 +212,9 @@ do {
                 <label for="door2"></label>
                 <select name="door" id="door2">
                 <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Recordsetdoor_rows as $row_Recordsetdoor): ?>
                   <option value="<?php echo $row_Recordsetdoor['doorname']?>"><?php echo $row_Recordsetdoor['doorname']?></option>
-                  <?php
-} while ($row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor));
-  $rows = mysql_num_rows($Recordsetdoor);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetdoor, 0);
-	  $row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor);
-  }
-?>
+                  <?php endforeach; ?>
                 </select>
 </span></td>
               </tr>
@@ -582,7 +250,7 @@ do {
               <td width="17%" align="center" bgcolor="#CCFF99"><strong>الحديقــــــة</strong></td>
               <td width="17%" align="center" bgcolor="#CCFF99"><strong>مساحة المبانى</strong></td>
               <td width="16%" align="center" bgcolor="#CCFF99"><strong>مساحة الارض</strong></td>
-              <td width="8%" rowspan="3" bgcolor="#CCFF99"><img src="aqarr.jpg" width="61" height="64" alt=""/></td>
+              <td width="8%" rowspan="3" bgcolor="#CCFF99"><img src="aqarr.jpg" width="61" height="64" alt="Property"/></td>
             </tr>
             <tr>
               <td align="center" bgcolor="#CCFF99"><span id="sprytextfield13">
@@ -697,7 +365,7 @@ do {
           <td colspan="7"><table width="100%" border="0" align="center">
             <tr>
               <td width="27%" align="right"><input type="text" name="whatsapp" id="whatsapp" /></td>
-              <td width="11%" align="left"><strong><img src="whatsapp.png" width="40" height="40" alt=""/></strong></td>
+              <td width="11%" align="left"><strong><img src="whatsapp.png" width="40" height="40" alt="WhatsApp icon"/></strong></td>
               <td width="48%" align="right"><span id="sprytextfield26">
                 <label for="cust_title"></label>
                 <span class="textfieldRequiredMsg">يلزم ادخال اسم العميل بالكامل.</span>
@@ -706,29 +374,20 @@ do {
               <td width="5%" align="right"><label for="laqab"></label>
                 <select name="laqab" id="laqab">
                 <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Recordsetlaqab_rows as $row_Recordsetlaqab): ?>
                   <option value="<?php echo $row_Recordsetlaqab['laqab_name']?>"><?php echo $row_Recordsetlaqab['laqab_name']?></option>
-                  <?php
-} while ($row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab));
-  $rows = mysql_num_rows($Recordsetlaqab);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetlaqab, 0);
-	  $row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab);
-  }
-?>
+                  <?php endforeach; ?>
                 </select></td>
               <td width="9%" align="right" bgcolor="#9E9E9E"><strong>اســـم العميل</strong></td>
             </tr>
             <tr>
               <td align="right"><input type="text" name="email" id="email" /></td>
-              <td align="left"><strong><img src="web.png" width="30" height="40" alt=""/></strong></td>
+              <td align="left"><strong><img src="web.png" width="30" height="40" alt="Website icon"/></strong></td>
               <td colspan="2" align="right"><span id="sprytextfield28">
                 <label for="telephone"></label>
                 <input type="text" name="telephone" tabindex="34" id="telephone" />
                 <span class="textfieldInvalidFormatMsg">ادخل رقم التليفون بشكل صحيح.</span></span></td>
-              <td align="left" bgcolor="#FFFFFF"><strong><img src="tel.png" width="30" height="30" alt=""/></strong></td>
+              <td align="left" bgcolor="#FFFFFF"><strong><img src="tel.png" width="30" height="30" alt="Telephone icon"/></strong></td>
             </tr>
             <tr>
               <td colspan="2">&nbsp;</td>
@@ -736,7 +395,7 @@ do {
                 <label for="mobile"></label>
                 <input type="text" name="mobile" tabindex="35" id="mobile" />
                 <span class="textfieldInvalidFormatMsg">ادخل رقم الموبايل بشكل صحيح.</span></span></td>
-              <td align="left" bgcolor="#FFFFFF"><strong><img src="mob.png" width="30" height="30" alt=""/></strong></td>
+              <td align="left" bgcolor="#FFFFFF"><strong><img src="mob.png" width="30" height="30" alt="Mobile icon"/></strong></td>
             </tr>
           </table></td>
         </tr>
@@ -771,18 +430,9 @@ do {
               <td colspan="2" align="right"><label for="officeid">:</label>
                 <select name="officeid" id="officeid">
                   <option value=""></option>
-                  <?php
-do {  
-?>
+                  <?php foreach($Qoffice_rows as $row_Qoffice): ?>
                   <option value="<?php echo $row_Qoffice['id']?>"><?php echo $row_Qoffice['name']?></option>
-                  <?php
-} while ($row_Qoffice = mysql_fetch_assoc($Qoffice));
-  $rows = mysql_num_rows($Qoffice);
-  if($rows > 0) {
-      mysql_data_seek($Qoffice, 0);
-	  $row_Qoffice = mysql_fetch_assoc($Qoffice);
-  }
-?>
+                  <?php endforeach; ?>
                 </select></td>
               <td bgcolor="#9E9E9E"><strong>مضاف من قبل مكتب تسويق</strong></td>
               <td align="center" bgcolor="#CCFF99"><span id="sprytextfield33">
@@ -880,27 +530,4 @@ var spryselect9 = new Spry.Widget.ValidationSelect("spryselect9", {isRequired:fa
 </body>
 </html>
 <?php
-mysql_free_result($Qcity);
-
-mysql_free_result($Qaqar_type);
-
-mysql_free_result($QQamalya_type);
-
-mysql_free_result($Qtashteeb);
-
-mysql_free_result($Qstatus);
-
-mysql_free_result($Recordset1);
-
-mysql_free_result($Recordsetmarhala);
-
-mysql_free_result($Recordsetdoor);
-
-mysql_free_result($Recordsetnamozg);
-
-mysql_free_result($Recordsetview);
-
-mysql_free_result($Recordsetlaqab);
-
-mysql_free_result($Qoffice);
 ?>

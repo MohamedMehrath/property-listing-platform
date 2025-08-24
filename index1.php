@@ -409,8 +409,8 @@ body {
                <table width="99%" border="0" align="center" cellpadding="0" cellspacing="0">
                   <tbody>
                     <tr>
-                      <td align="right" valign="middle" bgcolor="#F5F3F4"><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>"><strong><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>"><?php echo $row_Recordsetmomz_new['code']; ?></a></strong><img src="aqarr.jpg" width="40" height="40" alt=""/></a></td>
-                      <td colspan="2" align="center" valign="middle" bgcolor="#F5F3F4"><img src="hot.jpg" width="50" height="50" alt=""/></td>
+                      <td align="right" valign="middle" bgcolor="#F5F3F4"><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>"><strong><a href="./print_sheet_new.php?code=<?php echo $row_Recordsetmomz_new['code']; ?>"><?php echo $row_Recordsetmomz_new['code']; ?></a></strong><img src="aqarr.jpg" width="40" height="40" alt="Property"/></a></td>
+                      <td colspan="2" align="center" valign="middle" bgcolor="#F5F3F4"><img src="hot.jpg" width="50" height="50" alt="Hot property"/></td>
                       <td colspan="2" align="right" valign="middle" bgcolor="#F5F3F4"><?php echo $row_Recordsetmomz_new['madena']; ?></td>
                       <td colspan="2" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">المدينة</span></strong></td>
                       </tr>
@@ -675,7 +675,7 @@ do {
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
-            <td colspan="2" rowspan="2" align="center" valign="middle"><img src="searching-for-a-house.png" width="50" height="50" alt=""/></td>
+            <td colspan="2" rowspan="2" align="center" valign="middle"><img src="searching-for-a-house.png" width="50" height="50" alt="Searching for a house icon"/></td>
             </tr>
           <tr>
             <td>&nbsp;</td>
@@ -736,7 +736,7 @@ do {
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">نوع العقار</span></strong></td>
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">العملية</span></strong></td>
             <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1">المدينة</span></strong></td>
-            <td colspan="2" align="right" valign="middle" bgcolor="#E3DDFE"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1"> الكود</span></strong><a href="./update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" alt="" width="25" height="25" title="اضافة تنبيه"/></a></td>
+            <td colspan="2" align="right" valign="middle" bgcolor="#E3DDFE"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1"> الكود</span></strong><a href="./update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" alt="Add alert for property <?php echo $row_Recordset1['code']; ?>" width="25" height="25" title="اضافة تنبيه"/></a></td>
             </tr>
           <tr>
             <td colspan="3" align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['ain']; ?></span></td>
@@ -747,7 +747,7 @@ do {
             <td align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['aqar_type']; ?></span></td>
             <td align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['amalya_type']; ?></span></td>
             <td align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['madena']; ?></span></td>
-            <td colspan="2" align="right" valign="middle" bgcolor="#E3DDFE"><a href="./view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" title="عرض الصور" target="_blank"><?php echo $row_Recordset1['code']; ?><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1"><a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="صور العقار" width="30" height="23" title="صور العقار" /></a></span></strong></a></td>
+            <td colspan="2" align="right" valign="middle" bgcolor="#E3DDFE"><a href="./view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" title="عرض الصور" target="_blank"><?php echo $row_Recordset1['code']; ?><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow1"><a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="View images for property <?php echo $row_Recordset1['code']; ?>" width="30" height="23" title="صور العقار" /></a></span></strong></a></td>
             </tr>
           <tr>
             <td colspan="3" align="center" valign="middle"><span class="black"><?php echo $row_Recordset1['wow']; ?></span></td>
@@ -775,7 +775,7 @@ do {
             <td colspan="2" align="center" valign="middle" bgcolor="#E3DDFE"><span class="black"><?php echo $row_Recordset1['namozg']; ?></span></td>
             </tr>
           <tr>
-            <td colspan="12" align="center" valign="middle" bgcolor="#CCCCCC"><img src="linebar.png" width="280" height="13" alt=""/><img src="linebar.png" width="280" height="13" alt=""/><img src="linebar.png" width="280" height="13" alt=""/></td>
+            <td colspan="12" align="center" valign="middle" bgcolor="#CCCCCC"><img src="linebar.png" width="280" height="13" alt="Decorative line"/><img src="linebar.png" width="280" height="13" alt="Decorative line"/><img src="linebar.png" width="280" height="13" alt="Decorative line"/></td>
             </tr>
         </tbody>
       </table><?php }while ($row_Recordset1=mysql_fetch_assoc($Recordset1));?></td>

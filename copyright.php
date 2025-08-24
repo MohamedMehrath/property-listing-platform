@@ -32,10 +32,10 @@ function MM_swapImage() { //v3.0
 <table width="900" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#327900">
   <tbody>
     <tr bgcolor="#314ECE">
-      <td width="62" align="center" valign="middle"><strong style="color: #E9E809"><a href="index.php" target="_top"><img src="exit.png" alt="" width="40" height="40" title="خروج"/></a></strong></td>
-      <td width="64" align="center" valign="middle"><a href="index_matlob.php" target="_top" onmouseover="MM_swapImage('Image6','','L3_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L3.png" alt="" width="50" height="50" id="Image6" /></a></td>
-      <td width="62" align="center" valign="middle"><a href="index_offices.php" target="_top" onmouseover="MM_swapImage('Image5','','L2_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L2.png" alt="" width="50" height="50" id="Image5" /></a></td>
-      <td width="64" align="center" valign="middle"><a href="index1.php" target="_top" onmouseover="MM_swapImage('Image4','','L1_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L1.png" alt="" width="50" height="50" id="Image4" /></a></td>
+      <td width="62" align="center" valign="middle"><strong style="color: #E9E809"><a href="index.php" target="_top"><img src="exit.png" alt="Logout" width="40" height="40" title="خروج"/></a></strong></td>
+      <td width="64" align="center" valign="middle"><a href="index_matlob.php" target="_top" onmouseover="MM_swapImage('Image6','','L3_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L3.png" alt="Matlob Index" width="50" height="50" id="Image6" /></a></td>
+      <td width="62" align="center" valign="middle"><a href="index_offices.php" target="_top" onmouseover="MM_swapImage('Image5','','L2_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L2.png" alt="Offices Index" width="50" height="50" id="Image5" /></a></td>
+      <td width="64" align="center" valign="middle"><a href="index1.php" target="_top" onmouseover="MM_swapImage('Image4','','L1_1.png',1)" onmouseout="MM_swapImgRestore()"><img src="L1.png" alt="Main Index" width="50" height="50" id="Image4" /></a></td>
       <td width="512" align="right" valign="middle"><strong><span class="blue" style="color: #FFFFFF">برنامج إدارة التسويق العقارى الاصدار الثالث - جميع الحقوق محفوظة</span></strong></td>
       <td width="110" align="center" valign="middle"><strong><span class="blue" style="color: #FFFFFF">V. 3.0 (2016)</span></strong></td>
     </tr>

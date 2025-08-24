@@ -1,5 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 error_reporting( error_reporting() & ~E_NOTICE );
 //initialize the session
@@ -7,7 +6,14 @@ if (!isset($_SESSION)) {
   session_start();
   $_SESSION['code'] = $_POST['code'];
 }
-mysql_query("SET NAMES 'utf8'");
+
+try {
+    $pdo = get_db_connection('goodnews1');
+} catch (PDOException $e) {
+    // Handle connection error gracefully
+    die("Database connection failed: " . $e->getMessage());
+}
+
 // ** Logout the current user. **
 $logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
 if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
@@ -31,37 +37,6 @@ if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
 }
 ?>
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
 $currentPage = $_SERVER["PHP_SELF"];
 
 $maxRows_Recordset1 = 10;
@@ -75,17 +50,19 @@ $colname_Recordset1 = "-1";
 if (isset($_POST['code'])) {
   $colname_Recordset1 = $_POST['code'];
 }
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = sprintf("SELECT * FROM udata WHERE code = %s ORDER BY entry_date DESC", GetSQLValueString($colname_Recordset1, "text"));
-$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
-$Recordset1 = mysql_query($query_limit_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
+$query_Recordset1 = "SELECT * FROM udata WHERE code = ? ORDER BY entry_date DESC";
+$stmt = $pdo->prepare($query_Recordset1 . " LIMIT ?, ?");
+$stmt->execute([$colname_Recordset1, $startRow_Recordset1, $maxRows_Recordset1]);
+$Recordset1 = $stmt->fetchAll();
+$row_Recordset1 = $Recordset1[0] ?? null;
+
 
 if (isset($_GET['totalRows_Recordset1'])) {
   $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
 } else {
-  $all_Recordset1 = mysql_query($query_Recordset1);
-  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
+    $stmt_total = $pdo->prepare($query_Recordset1);
+    $stmt_total->execute([$colname_Recordset1]);
+  $totalRows_Recordset1 = $stmt_total->rowCount();
 }
 $totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
 
@@ -157,7 +134,7 @@ body {
           <td width="22%" class="gr"><strong>ادخل كود العقار</strong></td>
         </tr>
         <tr>
-          <td colspan="6" bgcolor="#FFFFFF"><hr /><p align="right">نتيجة البحث عن كود العقار<?php echo GetSQLValueString($colname_Recordset1, "text"); ?>...</p> </td>
+          <td colspan="6" bgcolor="#FFFFFF"><hr /><p align="right">نتيجة البحث عن كود العقار<?php echo $colname_Recordset1; ?>...</p> </td>
           </tr>
       </table>
     </form></td>
@@ -174,7 +151,7 @@ body {
         </tr>
       </table>
       &nbsp;
-      <?php do { ?>
+      <?php foreach($Recordset1 as $row_Recordset1): ?>
   <?php if ($totalRows_Recordset1 > 0) { // Show if recordset not empty ?>
     <table width="95%" border="0" align="center">
       <tr class="gr">
@@ -280,7 +257,7 @@ body {
         </tr>
       </table>
     <?php } // Show if recordset not empty ?>
-  <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?></td>
+  <?php endforeach; ?></td>
   </tr>
   <tr>
     <td colspan="2"><table width="25%" border="0">
@@ -307,6 +284,4 @@ body {
 </body>
 </html>
 <?php
-mysql_free_result($Recordset1);
-
 ?>

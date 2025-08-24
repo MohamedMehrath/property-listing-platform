@@ -1,4 +1,4 @@
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 error_reporting( error_reporting() & ~E_NOTICE );
 //initialize the session
@@ -6,7 +6,14 @@ if (!isset($_SESSION)) {
   session_start();
 $_SESSION['namozg'] = $_POST['namozg'];
 }
-mysql_query("SET NAMES 'utf8'");
+
+try {
+    $pdo = get_db_connection('utopia');
+} catch (PDOException $e) {
+    // Handle connection error gracefully
+    die("Database connection failed: " . $e->getMessage());
+}
+
 // ** Logout the current user. **
 $logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
 if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
@@ -30,37 +37,6 @@ if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
 }
 ?>
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
 $currentPage = $_SERVER["PHP_SELF"];
 
 $maxRows_Recordset1 = 10;
@@ -74,25 +50,25 @@ $colname_Recordset1 = "-1";
 if (isset($_POST['namozg'])) {
   $colname_Recordset1 = $_POST['namozg'];
 }
-mysql_select_db($database_utopia, $utopia);
-$query_Recordset1 = sprintf("SELECT * FROM udata WHERE namozg = %s ORDER BY update_date DESC", GetSQLValueString($colname_Recordset1, "text"));
-$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
-$Recordset1 = mysql_query($query_limit_Recordset1, $utopia) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
+$query_Recordset1 = "SELECT * FROM udata WHERE namozg = ? ORDER BY update_date DESC";
+$stmt = $pdo->prepare($query_Recordset1 . " LIMIT ?, ?");
+$stmt->execute([$colname_Recordset1, $startRow_Recordset1, $maxRows_Recordset1]);
+$Recordset1 = $stmt->fetchAll();
+$row_Recordset1 = $Recordset1[0] ?? null;
+
 
 if (isset($_GET['totalRows_Recordset1'])) {
   $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
 } else {
-  $all_Recordset1 = mysql_query($query_Recordset1);
-  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
+    $stmt_total = $pdo->prepare($query_Recordset1);
+    $stmt_total->execute([$colname_Recordset1]);
+  $totalRows_Recordset1 = $stmt_total->rowCount();
 }
 $totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
 
-mysql_select_db($database_utopia, $utopia);
 $query_Recordset2 = "SELECT distinct namozg FROM udata ORDER BY namozg ASC";
-$Recordset2 = mysql_query($query_Recordset2, $utopia) or die(mysql_error());
-$row_Recordset2 = mysql_fetch_assoc($Recordset2);
-$totalRows_Recordset2 = mysql_num_rows($Recordset2);
+$Recordset2 = $pdo->query($query_Recordset2)->fetchAll();
+$totalRows_Recordset2 = count($Recordset2);
 
 $queryString_Recordset1 = "";
 if (!empty($_SERVER['QUERY_STRING'])) {
@@ -161,18 +137,9 @@ body {
           <td width="5%"><label for="code"></label>
             <label for="namozg"></label>
             <select name="namozg" id="namozg">
-              <?php
-do {  
-?>
+              <?php foreach($Recordset2 as $row_Recordset2): ?>
               <option value="<?php echo $row_Recordset2['namozg']?>"<?php if (!(strcmp($row_Recordset2['namozg'], $_SESSION['namozg']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordset2['namozg']?></option>
-              <?php
-} while ($row_Recordset2 = mysql_fetch_assoc($Recordset2));
-  $rows = mysql_num_rows($Recordset2);
-  if($rows > 0) {
-      mysql_data_seek($Recordset2, 0);
-	  $row_Recordset2 = mysql_fetch_assoc($Recordset2);
-  }
-?>
+              <?php endforeach; ?>
             </select></td>
           <td width="39%" class="gr"><strong>اختر نمــــوذج العقار</strong></td>
         </tr>
@@ -194,7 +161,7 @@ do {
         </tr>
       </table>
       &nbsp;
-      <?php do { ?>
+      <?php foreach($Recordset1 as $row_Recordset1): ?>
   <?php if ($totalRows_Recordset1 > 0) { // Show if recordset not empty ?>
     <table width="95%" border="0" align="center">
       <tr class="gr">
@@ -300,7 +267,7 @@ do {
         </tr>
       </table>
     <?php } // Show if recordset not empty ?>
-  <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?></td>
+  <?php endforeach; ?></td>
   </tr>
   <tr>
     <td colspan="2"><table width="25%" border="0">
@@ -327,7 +294,4 @@ do {
 </body>
 </html>
 <?php
-mysql_free_result($Recordset1);
-
-mysql_free_result($Recordset2);
 ?>

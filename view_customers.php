@@ -1,11 +1,17 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 //initialize the session
 if (!isset($_SESSION)) {
   session_start();
 }
-mysql_query("SET NAMES 'utf8'");
+
+try {
+    $pdo = get_db_connection('goodnews1');
+} catch (PDOException $e) {
+    // Handle connection error gracefully
+    die("Database connection failed: " . $e->getMessage());
+}
+
 // ** Logout the current user. **
 $logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
 if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
@@ -29,44 +35,11 @@ if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
 }
 ?>
 <?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
 $currentPage = $_SERVER["PHP_SELF"];
 
-mysql_select_db($database_goodnews1, $goodnews1);
 $query_Recordset1 = "SELECT * FROM udata";
-$Recordset1 = mysql_query($query_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
+$Recordset1 = $pdo->query($query_Recordset1)->fetchAll();
+$totalRows_Recordset1 = count($Recordset1);
 
 $queryString_Recordset1 = "";
 if (!empty($_SERVER['QUERY_STRING'])) {
@@ -135,7 +108,7 @@ body {
     </tr>
     <tr>
       <td rowspan="2" valign="top">&nbsp;</td>
-      <td rowspan="2" valign="top"><?php do { ?>
+      <td rowspan="2" valign="top"><?php foreach($Recordset1 as $row_Recordset1): ?>
         <div class="panel-group" id="accordion" dir="rtl">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -174,7 +147,7 @@ body {
             </div>
           </div>
         </div>
-          <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?>
+          <?php endforeach; ?>
         <p>&nbsp;</p>
       <p>&nbsp;</p></td>
       <td rowspan="2" valign="top"><p>&nbsp;</p></td>
@@ -194,5 +167,4 @@ body {
 </body>
 </html>
 <?php
-mysql_free_result($Recordset1);
 ?>
