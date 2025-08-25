@@ -8,11 +8,11 @@
 
 | Metric | Status | Details & Recommended Action |
 | :--- | :--- | :--- |
-| **Dependency Health** | 🚨 Critical | No `package.json` or `composer.json` found. Dependencies like jQuery, Spry, and accounting.js are vendored directly in the repository. **Action:** Audit all libraries for version, known vulnerabilities (CVEs), and license compliance. Create a plan to manage dependencies using a modern tool like Composer or npm. |
-| **Code Quality** | 🚨 Critical | **1. Insecure Database Queries:** The codebase exclusively uses the deprecated `mysql_*` functions, making it highly vulnerable to SQL injection. **2. Spaghetti Code:** Files like `index.php` and `insert.php` tightly mix PHP, raw SQL, HTML, and JavaScript, making them nearly unmaintainable. **3. Duplicated Code:** Critical functions like `GetSQLValueString` are copied across multiple files. **Action:** Prioritize a security overhaul to replace `mysql_*` with PDO and prepared statements. Initiate a refactoring plan to separate application logic, presentation, and data access layers. |
-| **Accessibility (A11y)** | ⚠️ Needs Attention | A `grep` scan revealed widespread accessibility issues. Many `<img>` tags are missing `alt` attributes or use non-descriptive placeholder text (e.g., `alt="rr"`). This is especially problematic for functional images like buttons and links. **Action:** Create a task to audit and fix all `alt` tags to ensure they are descriptive and provide context for screen reader users. |
-| **Performance Bottlenecks** | ⚠️ Needs Attention | The application suffers from a classic "N+1 query" problem. For example, `insert.php` runs over 10 individual database queries to populate dropdowns, which is highly inefficient. **Action:** Analyze key pages to identify and consolidate database queries. Refactor data-fetching logic to use `JOIN`s and reduce the number of round trips to the database. |
-| **Documentation Freshness** | ⚠️ Needs Attention | The `mission_control` guide and its contents (`Component_Catalog.md`, `Prompt_Recipes.md`) have just been created and are not yet in sync with the codebase. **Action:** Populate the Component Catalog by documenting existing components, services, and data models as they are refactored. |
+| **Dependency Health** | 🚨 Critical | No `package.json` or `composer.json` found. Dependencies like jQuery (v1.11.1) and Bootstrap (v3.3.4) are vendored directly and are severely outdated, posing a significant security risk. **Action:** Audit all libraries for known vulnerabilities (CVEs). Prioritize creating a plan to manage dependencies using a modern tool like Composer or npm and update these libraries to stable, secure versions. |
+| **Code Quality** | 🚨 Critical | A refactoring from the deprecated `mysql_*` functions to modern PDO with prepared statements is underway. Key pages (`delete_item_admin.php`, `user_delete.php`) have been updated, but a significant number of files (30) still use the old, insecure functions. **Action:** The highest priority is to **complete the `mysql_*` to PDO refactoring** across the entire application to eliminate SQL injection vulnerabilities. Address remaining "spaghetti code" and duplicated helper functions like `GetSQLValueString` as part of this effort. |
+| **Accessibility (A11y)** | ⚠️ Needs Attention | A scan revealed widespread accessibility issues. Many functional `<img>` tags (for links and buttons) are missing `alt` attributes or use vague placeholder text (e.g., `alt="rr"`), making the site difficult to navigate for users with screen readers. **Action:** Create a task to audit and fix all `alt` tags to ensure they clearly describe the image's content or the link's function. |
+| **Performance Bottlenecks** | ⚠️ Needs Attention | The "N+1 query" problem on the main data entry form (`insert.php`) **has been fixed** via the `get_dropdown_data()` function. However, the pattern of fetching data with multiple, inefficient queries likely persists in other legacy files (e.g., `custom_searchold.php`). **Action:** Audit the top 5 most-used pages to identify and refactor remaining N+1 query issues by consolidating database calls. |
+| **Documentation Freshness** | ⚠️ Needs Attention | The `mission_control` guide exists, but its contents (`Component_Catalog.md`, `Prompt_Recipes.md`) are currently placeholders. The documentation is not yet in sync with the actual codebase. **Action:** Begin populating the Component Catalog by documenting the newly refactored PDO database functions and the authentication flow. |
 
 ---
 
@@ -21,18 +21,19 @@
 This section automatically generates draft GitHub Issues for any `Critical` or `Recommended` actions identified in the Project Vitals scan.
 
 ### 🚨 Critical Actions
-- [ ] **Dependency Vulnerability Audit:** See Issue #1 (auto-generated)
-  - **Task:** Audit all vendored JavaScript and PHP libraries for known security vulnerabilities (CVEs).
-- [ ] **Security Overhaul: Replace `mysql_*` functions:** See Issue #2 (auto-generated)
-  - **Task:** Refactor all database queries to use PDO with prepared statements to prevent SQL injection.
+- [x] **Complete the Security Overhaul: Finish `mysql_*` to PDO Refactoring:** See Issue #1
+  - **Task:** Identify all remaining files using `mysql_*` functions and refactor them to use the new PDO connection pattern found in `Connections/db.php`.
+  - **Progress:** 2 files refactored, 30 remaining.
+- [ ] **Audit and Upgrade Vendored Dependencies:** See Issue #2
+  - **Task:** Identify all outdated JavaScript libraries (jQuery, Spry, etc.). Research their vulnerabilities and create a plan to upgrade them to secure, modern equivalents.
 
 ### ⚠️ Recommended Actions
-- [ ] **Refactor `insert.php`:** See Issue #3 (auto-generated)
-  - **Task:** Separate the business logic, database queries, and HTML presentation for the `insert.php` file. Address the N+1 query problem by consolidating data fetching.
-- [ ] **Accessibility Audit: Image `alt` Tags:** See Issue #4 (auto-generated)
-  - **Task:** Review all `<img>` tags in the application and provide descriptive `alt` text for non-decorative images.
-- [ ] **Populate Component Catalog:** See Issue #5 (auto-generated)
-  - **Task:** Document the first 5-10 most critical services and data models in `docs/mission_control/EG_01_Component_Catalog.md`.
+- [ ] **Audit and Fix Image `alt` Tags for Accessibility:** See Issue #3
+  - **Task:** Review all `<img>` tags in the application and provide descriptive `alt` text for non-decorative images, particularly those within `<a>` tags.
+- [ ] **Identify and Fix Remaining N+1 Query Bottlenecks:** See Issue #4
+  - **Task:** Analyze legacy pages like `custom_search.php` and `index1.php` for inefficient database loops and refactor them, potentially by extending the `get_dropdown_data` pattern.
+- [ ] **Populate the Component Catalog:** See Issue #5
+  - **Task:** Document the `get_db_connection` and `get_dropdown_data` functions in `docs/mission_control/EG_01_Component_Catalog.md` as the first entries.
 
 ---
 
@@ -41,11 +42,11 @@ This section automatically generates draft GitHub Issues for any `Critical` or `
 This section contains the core engineering playbook for the project.
 
 **Architectural Guardrails (Golden Rules):**
-1.  **Never Mix Languages in One File:** PHP logic, HTML, CSS, and JavaScript must be in separate files. Consider adopting an architectural pattern like **MVC (Model-View-Controller)** to formalize this separation.
-2.  **All Database Queries Must Use PDO:** Direct calls to `mysql_*` or `mysqli_*` are forbidden. Use prepared statements to prevent SQL injection.
+1.  **Never Mix Languages in One File:** PHP logic, HTML, CSS, and JavaScript must be in separate files. Follow the example set by `insert.php` and `insert_logic.php`.
+2.  **All New Database Queries Must Use PDO:** Direct calls to `mysql_*` or `mysqli_*` are forbidden. Use the existing `get_db_connection` function and prepared statements.
 3.  **No Business Logic in the Frontend:** Client-side code is for presentation and user interaction only. All business logic belongs on the server.
-4.  **Components Must Be Reusable:** Before writing new code, check the Component Catalog for an existing solution.
-5.  **Write for Humans, Not Just Machines:** Code must be clear, commented, and easy for another developer to understand. Adopting a specific coding style guide, like [PSR-12](https://www.php-fig.org/psr/psr-12/), can help maintain consistency.
+4.  **Consolidate Database Queries:** Avoid N+1 query patterns. Use `JOINs` or consolidated fetching functions like `get_dropdown_data` wherever possible.
+5.  **Write for Humans, Not Just Machines:** Code must be clear, commented, and easy for another developer to understand. Adopting a specific coding style guide, like [PSR-12](https://www.php-fig.org/psr/psr-12/), is recommended.
 
 **Component Catalog:**
 - See the detailed guide here: [docs/mission_control/EG_01_Component_Catalog.md](./docs/mission_control/EG_01_Component_Catalog.md)

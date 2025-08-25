@@ -1,10 +1,10 @@
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 
 <?php
 if (!isset($_SESSION)) {
   session_start();
 }
-mysql_query("SET NAMES 'utf8'");
+
 $MM_authorizedUsers = "admin";
 $MM_donotCheckaccess = "false";
 
@@ -45,45 +45,19 @@ if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers,
   header("Location: ". $MM_restrictGoTo); 
   exit;
 }
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
 
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
+// New PDO connection
+try {
+    $pdo = get_db_connection('aqarmarket');
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
 }
 
 if ((isset($_POST['code'])) && ($_POST['code'] != "")) {
-  $deleteSQL = sprintf("DELETE FROM udata WHERE code=%s",
-                       GetSQLValueString($_POST['code'], "int"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($deleteSQL, $utopia) or die(mysql_error());
+  $deleteSQL = "DELETE FROM udata WHERE code= :code";
+  $stmt = $pdo->prepare($deleteSQL);
+  $stmt->bindParam(':code', $_POST['code'], PDO::PARAM_INT);
+  $stmt->execute();
 
   $deleteGoTo = "./delete_item_admin_ok.php";
   if (isset($_SERVER['QUERY_STRING'])) {
@@ -91,22 +65,20 @@ if ((isset($_POST['code'])) && ($_POST['code'] != "")) {
     $deleteGoTo .= $_SERVER['QUERY_STRING'];
   }
   header(sprintf("Location: %s", $deleteGoTo));
+  exit();
 }
 
 $colname_Recordset1 = "-1";
 if (isset($_GET['code'])) {
   $colname_Recordset1 = $_GET['code'];
 }
-mysql_select_db($database_utopia, $utopia);
-$query_Recordset1 = sprintf("SELECT * FROM udata WHERE code = %s", GetSQLValueString($colname_Recordset1, "int"));
-$Recordset1 = mysql_query($query_Recordset1, $utopia) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
 
-$colname_Recordset1 = "-1";
-if (isset($_GET['code'])) {
-  $colname_Recordset1 = $_GET['code'];
-}
+$query_Recordset1 = "SELECT * FROM udata WHERE code = :code";
+$stmt = $pdo->prepare($query_Recordset1);
+$stmt->bindParam(':code', $colname_Recordset1, PDO::PARAM_INT);
+$stmt->execute();
+$row_Recordset1 = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalRows_Recordset1 = $stmt->rowCount();
 
 $currentPage = $_SERVER["PHP_SELF"];
 
@@ -157,7 +129,7 @@ body {
 <body>
 <table width="93%" border="0" align="center">
   <tr>
-    <td colspan="2" align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
+    <td colspan="2" align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner"></iframe></td>
   </tr>
   <tr>
     <td colspan="2" bgcolor="#314ECE">&nbsp;</td>
@@ -193,6 +165,3 @@ body {
 </table>
 </body>
 </html>
-<?php
-mysql_free_result($Recordset1);
-?>
