@@ -1,108 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-//initialize the session
-if (!isset($_SESSION)) {
-  session_start();
-}
-mysql_query("SET NAMES 'utf8'");
-// ** Logout the current user. **
-$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
-if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
-  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
-  //to fully log out a visitor we need to clear the session varialbles
-  $_SESSION['MM_Username'] = NULL;
-  $_SESSION['MM_UserGroup'] = NULL;
-  $_SESSION['PrevUrl'] = NULL;
-  unset($_SESSION['MM_Username']);
-  unset($_SESSION['MM_UserGroup']);
-  unset($_SESSION['PrevUrl']);
-	
-  $logoutGoTo = "index.php";
-  if ($logoutGoTo) {
-    header("Location: $logoutGoTo");
-    exit;
-  }
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$currentPage = $_SERVER["PHP_SELF"];
-
-$maxRows_Recordset1 = 10;
-$pageNum_Recordset1 = 0;
-if (isset($_GET['pageNum_Recordset1'])) {
-  $pageNum_Recordset1 = $_GET['pageNum_Recordset1'];
-}
-$startRow_Recordset1 = $pageNum_Recordset1 * $maxRows_Recordset1;
-
-$colname_Recordset1 = "-1";
-if (isset($_GET['code'])) {
-  $colname_Recordset1 = $_GET['code'];
-}
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = sprintf("SELECT * FROM udata WHERE code = %s ORDER BY entry_date DESC", GetSQLValueString($colname_Recordset1, "text"));
-$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
-$Recordset1 = mysql_query($query_limit_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-
-if (isset($_GET['totalRows_Recordset1'])) {
-  $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
-} else {
-  $all_Recordset1 = mysql_query($query_Recordset1);
-  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
-}
-$totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
-
-$queryString_Recordset1 = "";
-if (!empty($_SERVER['QUERY_STRING'])) {
-  $params = explode("&", $_SERVER['QUERY_STRING']);
-  $newParams = array();
-  foreach ($params as $param) {
-    if (stristr($param, "pageNum_Recordset1") == false && 
-        stristr($param, "totalRows_Recordset1") == false) {
-      array_push($newParams, $param);
-    }
-  }
-  if (count($newParams) != 0) {
-    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
-  }
-}
-$queryString_Recordset1 = sprintf("&totalRows_Recordset1=%d%s", $totalRows_Recordset1, $queryString_Recordset1);
-?>
+<?php require_once('print_sheet_logic.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -470,31 +366,29 @@ body {
                   <tr>
                     <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مكتب مصدر</span></strong></td>
                     <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">تنبيه ؟</span></strong></td>
-                    <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">مميز ؟</span></strong></td>
+                    <td align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">هل تم الحصول عليه؟</span></strong></td>
                     <td rowspan="2" align="center" valign="middle" bgcolor="#F5F3F4"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">سمـــــــــــــــات</span></strong></td>
                   </tr>
                   <tr>
                     <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['office_id']; ?></td>
                     <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['remember']; ?></td>
-                    <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['momz']; ?></td>
+                    <td align="center" valign="middle" bgcolor="#FFFFFF"><?php echo $row_Recordset1['found']; ?></td>
                     </tr>
                 </tbody>
               </table></td>
             </tr>
             <tr>
               <td width="6%" align="right" bgcolor="#F5F3F4"><a href="<?php echo $logoutAction ?>">Log out</a></td>
-              <td width="5%" align="right" bgcolor="#F5F3F4"><strong class="yelow"><a href="./print_sheet_new.php?code=<?php echo $row_Recordset1['code']; ?>">رجــــوع</a></strong></td>
-              <td width="13%" align="right" bgcolor="#F5F3F4"><a href="print_sheet_images.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><strong>بيانات العقار بالصور</strong></a></td>
-              <td width="3%" align="right" bgcolor="#F5F3F4"><a href="update.php?code=<?php echo $row_Recordset1['code'];?>"><img src="alarm.jpg" width="40" height="40" alt=""/></a></td>
-              <td width="36%" align="right" bgcolor="#F5F3F4"><span class="black"><img src="./print.jpg" width="74" height="61" onclick="window.print() " /></span></td>
-              <td align="right" bgcolor="#F5F3F4"><a href="view_images_code.php?code=<?php echo $row_Recordset1['code']; ?>" target="_blank"><img src="./view_images.png" alt="صور العقار" width="72" height="47" /></a></td>
+              <td width="5%" align="right" bgcolor="#F5F3F4"><strong class="yelow"><a href="./index_matlob.php?code=<?php echo $row_Recordset1['code']; ?>">رجــــوع</a></strong></td>
+              <td width="9%" align="center" bgcolor="#F5F3F4"><span class="black"><img src="./print.jpg" width="74" height="61" onclick="window.print() " /></span></td>
+              <td colspan="3" align="right" bgcolor="#F5F3F4"><?php echo $row_Recordset1['action_history']; ?></td>
             </tr>
             <tr>
               <td colspan="6" align="right" valign="middle"><span class="black"><span class="green"><?php echo date("l"); ?></span>  _<?php echo date("d/m/Y h:i:s a") ?></span></td>
             </tr>
             <tr>
               <td colspan="4" align="center" valign="middle">&nbsp;</td>
-              <td align="center" valign="middle">&nbsp;</td>
+              <td width="36%" align="center" valign="middle">&nbsp;</td>
               <td align="center" valign="middle">&nbsp;</td>
             </tr>
             <tr>
@@ -513,6 +407,3 @@ body {
 <p><a href="<?php echo $logoutAction ?>">Log out</a></p>
 </body>
 </html>
-<?php
-mysql_free_result($Recordset1);
-?>

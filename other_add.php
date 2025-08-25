@@ -1,320 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-if (!isset($_SESSION)) {
-  session_start();
-}
-mysql_query("SET NAMES 'utf8'");
-$MM_authorizedUsers = "admin";
-$MM_donotCheckaccess = "false";
-
-// *** Restrict Access To Page: Grant or deny access to this page
-function isAuthorized($strUsers, $strGroups, $UserName, $UserGroup) { 
-  // For security, start by assuming the visitor is NOT authorized. 
-  $isValid = False; 
-
-  // When a visitor has logged into this site, the Session variable MM_Username set equal to their username. 
-  // Therefore, we know that a user is NOT logged in if that Session variable is blank. 
-  if (!empty($UserName)) { 
-    // Besides being logged in, you may restrict access to only certain users based on an ID established when they login. 
-    // Parse the strings into arrays. 
-    $arrUsers = Explode(",", $strUsers); 
-    $arrGroups = Explode(",", $strGroups); 
-    if (in_array($UserName, $arrUsers)) { 
-      $isValid = true; 
-    } 
-    // Or, you may restrict access to only certain users based on their username. 
-    if (in_array($UserGroup, $arrGroups)) { 
-      $isValid = true; 
-    } 
-    if (($strUsers == "") && false) { 
-      $isValid = true; 
-    } 
-  } 
-  return $isValid; 
-}
-
-$MM_restrictGoTo = "./not_access.php";
-if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers, $_SESSION['MM_Username'], $_SESSION['MM_UserGroup'])))) {   
-  $MM_qsChar = "?";
-  $MM_referrer = $_SERVER['PHP_SELF'];
-  if (strpos($MM_restrictGoTo, "?")) $MM_qsChar = "&";
-  if (isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0) 
-  $MM_referrer .= "?" . $_SERVER['QUERY_STRING'];
-  $MM_restrictGoTo = $MM_restrictGoTo. $MM_qsChar . "accesscheck=" . urlencode($MM_referrer);
-  header("Location: ". $MM_restrictGoTo); 
-  exit;
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$editFormAction = $_SERVER['PHP_SELF'];
-if (isset($_SERVER['QUERY_STRING'])) {
-  $editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form6")) {
-  $insertSQL = sprintf("INSERT INTO website (url, sitename) VALUES (%s, %s)",
-                       GetSQLValueString($_POST['url'], "text"),
-                       GetSQLValueString($_POST['sitename'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form12")) {
-  $insertSQL = sprintf("INSERT INTO laqab (laqab_name) VALUES (%s)",
-                       GetSQLValueString($_POST['laqab'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form11")) {
-  $insertSQL = sprintf("INSERT INTO viewvv (viewname) VALUES (%s)",
-                       GetSQLValueString($_POST['view'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form8")) {
-  $insertSQL = sprintf("INSERT INTO namozg (namozgname) VALUES (%s)",
-                       GetSQLValueString($_POST['namozg'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form9")) {
-  $insertSQL = sprintf("INSERT INTO marhala (marhalaname) VALUES (%s)",
-                       GetSQLValueString($_POST['marhala'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form10")) {
-  $insertSQL = sprintf("INSERT INTO door (doorname) VALUES (%s)",
-                       GetSQLValueString($_POST['door'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($insertSQL, $goodnews1) or die(mysql_error());
-
-  $insertGoTo = "other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form1")) {
-  $insertSQL = sprintf("INSERT INTO city (cityname) VALUES (%s)",
-                       GetSQLValueString($_POST['cityname'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
-
-  $insertGoTo = "./other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  //header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form2")) {
-  $insertSQL = sprintf("INSERT INTO aqar_type_t (aqar_type_name) VALUES (%s)",
-                       GetSQLValueString($_POST['aqar_type_name'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
-
-  $insertGoTo = "./other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  //header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form3")) {
-  $insertSQL = sprintf("INSERT INTO amalya_type_t (amalya_type_name) VALUES (%s)",
-                       GetSQLValueString($_POST['amalya_type_name'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
-
-  $insertGoTo = "./other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  //header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form4")) {
-  $insertSQL = sprintf("INSERT INTO tashteeb_t (tashteeb_name) VALUES (%s)",
-                       GetSQLValueString($_POST['tashteeb_name'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
-
-  $insertGoTo = "./other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  //header(sprintf("Location: %s", $insertGoTo));
-}
-
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "form5")) {
-  $insertSQL = sprintf("INSERT INTO status_t (status_name) VALUES (%s)",
-                       GetSQLValueString($_POST['statusname'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($insertSQL, $utopia) or die(mysql_error());
-
-  $insertGoTo = "./other_add.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $insertGoTo .= (strpos($insertGoTo, '?')) ? "&" : "?";
-    $insertGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  //header(sprintf("Location: %s", $insertGoTo));
-}
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qcity = "SELECT * FROM city";
-$Qcity = mysql_query($query_Qcity, $utopia) or die(mysql_error());
-$row_Qcity = mysql_fetch_assoc($Qcity);
-$totalRows_Qcity = mysql_num_rows($Qcity);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qaqartype = "SELECT * FROM aqar_type_t";
-$Qaqartype = mysql_query($query_Qaqartype, $utopia) or die(mysql_error());
-$row_Qaqartype = mysql_fetch_assoc($Qaqartype);
-$totalRows_Qaqartype = mysql_num_rows($Qaqartype);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qamalya_type = "SELECT * FROM amalya_type_t";
-$Qamalya_type = mysql_query($query_Qamalya_type, $utopia) or die(mysql_error());
-$row_Qamalya_type = mysql_fetch_assoc($Qamalya_type);
-$totalRows_Qamalya_type = mysql_num_rows($Qamalya_type);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qtashteeb = "SELECT * FROM tashteeb_t";
-$Qtashteeb = mysql_query($query_Qtashteeb, $utopia) or die(mysql_error());
-$row_Qtashteeb = mysql_fetch_assoc($Qtashteeb);
-$totalRows_Qtashteeb = mysql_num_rows($Qtashteeb);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qstatus = "SELECT * FROM status_t";
-$Qstatus = mysql_query($query_Qstatus, $utopia) or die(mysql_error());
-$row_Qstatus = mysql_fetch_assoc($Qstatus);
-$totalRows_Qstatus = mysql_num_rows($Qstatus);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset2 = "SELECT * FROM website";
-$Recordset2 = mysql_query($query_Recordset2, $goodnews1) or die(mysql_error());
-$row_Recordset2 = mysql_fetch_assoc($Recordset2);
-$totalRows_Recordset2 = mysql_num_rows($Recordset2);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetnamozg = "SELECT * FROM namozg ORDER BY namozgname ASC";
-$Recordsetnamozg = mysql_query($query_Recordsetnamozg, $goodnews1) or die(mysql_error());
-$row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg);
-$totalRows_Recordsetnamozg = mysql_num_rows($Recordsetnamozg);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetlaqab = "SELECT * FROM laqab ORDER BY laqab_name ASC";
-$Recordsetlaqab = mysql_query($query_Recordsetlaqab, $goodnews1) or die(mysql_error());
-$row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab);
-$totalRows_Recordsetlaqab = mysql_num_rows($Recordsetlaqab);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetview = "SELECT * FROM viewvv ORDER BY viewname ASC";
-$Recordsetview = mysql_query($query_Recordsetview, $goodnews1) or die(mysql_error());
-$row_Recordsetview = mysql_fetch_assoc($Recordsetview);
-$totalRows_Recordsetview = mysql_num_rows($Recordsetview);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetmarhala = "SELECT * FROM marhala ORDER BY marhalaname ASC";
-$Recordsetmarhala = mysql_query($query_Recordsetmarhala, $goodnews1) or die(mysql_error());
-$row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala);
-$totalRows_Recordsetmarhala = mysql_num_rows($Recordsetmarhala);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetdoor = "SELECT * FROM door ORDER BY doorname ASC";
-$Recordsetdoor = mysql_query($query_Recordsetdoor, $goodnews1) or die(mysql_error());
-$row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor);
-$totalRows_Recordsetdoor = mysql_num_rows($Recordsetdoor);
-?>
+<?php require_once('other_add_logic.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -471,7 +155,7 @@ body {
               <td align="center" bgcolor="#FFFFFF" class="black"><strong>View</strong></td>
               </tr>
             <tr>
-              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok10" id="ok10" value="اضـــــافــــة" /></td>
+              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok10" id="ok10" value="اضــــافــــة" /></td>
               </tr>
             </table>
           <input type="hidden" name="MM_insert" value="form11" />
@@ -487,7 +171,7 @@ body {
               <td align="center" bgcolor="#FFFFFF"><strong class="black">الدور</strong></td>
               </tr>
             <tr>
-              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok9" id="ok9" value="اضـــــافـــة" /></td>
+              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok9" id="ok9" value="اضــــافـــة" /></td>
               </tr>
             </table>
           <input type="hidden" name="MM_insert" value="form10" />
@@ -503,7 +187,7 @@ body {
               <td align="center" bgcolor="#FFFFFF" class="black"><strong>المرحلة</strong></td>
               </tr>
             <tr>
-              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok8" id="ok8" value="اضـــــافـــــة" /></td>
+              <td colspan="2" align="center" bgcolor="#FFFFFF"><input type="submit" name="ok8" id="ok8" value="اضــــافـــــة" /></td>
               </tr>
             </table>
           <input type="hidden" name="MM_insert" value="form9" />
@@ -574,51 +258,51 @@ body {
           <tr>
             <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">حالات العقارات</strong></td>
             </tr>
-          <?php do { ?>
+          <?php foreach ($Qstatus as $row_Qstatus) { ?>
             <tr>
               <td align="center" valign="middle"><?php echo $row_Qstatus['status_name']; ?></td>
               </tr>
-            <?php } while ($row_Qstatus = mysql_fetch_assoc($Qstatus)); ?>
+            <?php } ?>
           </table></td>
         <td><table width="95%" border="0" align="center">
           <tr>
             <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">حالات التشطيب</strong></td>
             </tr>
-          <?php do { ?>
+          <?php foreach ($Qtashteeb as $row_Qtashteeb) { ?>
             <tr>
               <td align="center" valign="middle"><?php echo $row_Qtashteeb['tashteeb_name']; ?></td>
               </tr>
-            <?php } while ($row_Qtashteeb = mysql_fetch_assoc($Qtashteeb)); ?>
+            <?php } ?>
           </table></td>
         <td><table width="95%" border="0" align="center">
           <tr>
             <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">انواع عمليات العقارات</strong></td>
             </tr>
-          <?php do { ?>
+          <?php foreach ($Qamalya_type as $row_Qamalya_type) { ?>
             <tr>
               <td align="center" valign="middle"><?php echo $row_Qamalya_type['amalya_type_name']; ?></td>
               </tr>
-            <?php } while ($row_Qamalya_type = mysql_fetch_assoc($Qamalya_type)); ?>
+            <?php } ?>
           </table></td>
         <td><table width="95%" border="0" align="center">
           <tr>
             <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">انواع العقارات</strong></td>
             </tr>
-          <?php do { ?>
+          <?php foreach ($Qaqartype as $row_Qaqartype) { ?>
             <tr>
               <td align="center" valign="middle"><?php echo $row_Qaqartype['aqar_type_name']; ?></td>
               </tr>
-            <?php } while ($row_Qaqartype = mysql_fetch_assoc($Qaqartype)); ?>
+            <?php } ?>
           </table></td>
         <td><table width="95%" border="0" align="center">
           <tr>
             <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">المدن الحالية</strong></td>
             </tr>
-          <?php do { ?>
+          <?php foreach ($Qcity as $row_Qcity) { ?>
             <tr>
               <td align="center" valign="middle"><?php echo $row_Qcity['cityname']; ?></td>
               </tr>
-            <?php } while ($row_Qcity = mysql_fetch_assoc($Qcity)); ?>
+            <?php } ?>
           </table></td>
         </tr>
     </table></td>
@@ -628,51 +312,51 @@ body {
       <tr>
         <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">الألقاب الحالية</strong></td>
       </tr>
-      <?php do { ?>
+      <?php foreach ($Recordsetlaqab as $row_Recordsetlaqab) { ?>
         <tr>
           <td align="center" bgcolor="#CFD0EB"><?php echo $row_Recordsetlaqab['laqab_name']; ?></td>
         </tr>
-        <?php } while ($row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab)); ?>
+        <?php } ?>
     </table></td>
     <td width="12%" rowspan="2" align="center" class="gr"><table width="80%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">View الحالية</strong></td>
       </tr>
-      <?php do { ?>
+      <?php foreach ($Recordsetview as $row_Recordsetview) { ?>
         <tr>
           <td align="center" bgcolor="#CFD0EB"><?php echo $row_Recordsetview['viewname']; ?></td>
         </tr>
-        <?php } while ($row_Recordsetview = mysql_fetch_assoc($Recordsetview)); ?>
+        <?php } ?>
     </table></td>
     <td width="13%" rowspan="2" align="center" class="gr"><table width="80%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">الأدوار الحالية</strong></td>
       </tr>
-      <?php do { ?>
+      <?php foreach ($Recordsetdoor as $row_Recordsetdoor) { ?>
         <tr>
           <td align="center" bgcolor="#CFD0EB"><?php echo $row_Recordsetdoor['doorname']; ?></td>
         </tr>
-        <?php } while ($row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor)); ?>
+        <?php } ?>
     </table></td>
     <td width="15%" align="center" class="gr"><table width="80%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">المراحل الحالية</strong></td>
       </tr>
-      <?php do { ?>
+      <?php foreach ($Recordsetmarhala as $row_Recordsetmarhala) { ?>
         <tr>
           <td align="center" bgcolor="#CFD0EB"><?php echo $row_Recordsetmarhala['marhalaname']; ?></td>
         </tr>
-        <?php } while ($row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala)); ?>
+        <?php } ?>
     </table></td>
     <td width="28%" align="center" class="gr"><table width="80%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td align="center" valign="middle" bgcolor="#314ECE"><strong class="yelow">النماذج الحالية</strong></td>
         </tr>
-      <?php do { ?>
+      <?php foreach ($Recordsetnamozg as $row_Recordsetnamozg) { ?>
         <tr>
           <td align="center" bgcolor="#CFD0EB"><?php echo $row_Recordsetnamozg['namozgname']; ?></td>
           </tr>
-        <?php } while ($row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg)); ?>
+        <?php } ?>
     </table></td>
   </tr>
   <tr valign="top">
@@ -686,7 +370,7 @@ body {
         <td width="53%">&nbsp;</td>
         <td width="37%" align="center" valign="middle" bgcolor="#F5F3F4"><strong class="black"> مواقع تسويق عقارات صديقة</strong></td>
         </tr>
-      <?php do { ?>
+      <?php foreach ($Recordset2 as $row_Recordset2) { ?>
         <tr>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
@@ -702,7 +386,7 @@ body {
               </table>
             </form></td>
           </tr>
-        <?php } while ($row_Recordset2 = mysql_fetch_assoc($Recordset2)); ?>
+        <?php } ?>
     </table></td>
   </tr>
   <tr>
@@ -718,26 +402,3 @@ var sprytextfield2 = new Spry.Widget.ValidationTextField("sprytextfield2", "url"
 </script>
 </body>
 </html>
-<?php
-mysql_free_result($Qcity);
-
-mysql_free_result($Qaqartype);
-
-mysql_free_result($Qamalya_type);
-
-mysql_free_result($Qtashteeb);
-
-mysql_free_result($Qstatus);
-
-mysql_free_result($Recordset2);
-
-mysql_free_result($Recordsetnamozg);
-
-mysql_free_result($Recordsetlaqab);
-
-mysql_free_result($Recordsetview);
-
-mysql_free_result($Recordsetmarhala);
-
-mysql_free_result($Recordsetdoor);
-?>

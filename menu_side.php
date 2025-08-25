@@ -1,79 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php
-mysql_query("SET NAMES 'utf8'");
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$maxRows_Recordset1 = 10;
-$pageNum_Recordset1 = 0;
-if (isset($_GET['pageNum_Recordset1'])) {
-  $pageNum_Recordset1 = $_GET['pageNum_Recordset1'];
-}
-$startRow_Recordset1 = $pageNum_Recordset1 * $maxRows_Recordset1;
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = "SELECT * FROM aqar_need WHERE remember = 1 and found = 0 ORDER BY entry_date DESC";
-$query_limit_Recordset1 = sprintf("%s LIMIT %d, %d", $query_Recordset1, $startRow_Recordset1, $maxRows_Recordset1);
-$Recordset1 = mysql_query($query_limit_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-
-if (isset($_GET['totalRows_Recordset1'])) {
-  $totalRows_Recordset1 = $_GET['totalRows_Recordset1'];
-} else {
-  $all_Recordset1 = mysql_query($query_Recordset1);
-  $totalRows_Recordset1 = mysql_num_rows($all_Recordset1);
-}
-$totalPages_Recordset1 = ceil($totalRows_Recordset1/$maxRows_Recordset1)-1;
-
-$maxRows_Recordset2 = 10;
-$pageNum_Recordset2 = 0;
-if (isset($_GET['pageNum_Recordset2'])) {
-  $pageNum_Recordset2 = $_GET['pageNum_Recordset2'];
-}
-$startRow_Recordset2 = $pageNum_Recordset2 * $maxRows_Recordset2;
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset2 = "SELECT * FROM udata WHERE remember = 1 ORDER BY entry_date DESC";
-$query_limit_Recordset2 = sprintf("%s LIMIT %d, %d", $query_Recordset2, $startRow_Recordset2, $maxRows_Recordset2);
-$Recordset2 = mysql_query($query_limit_Recordset2, $goodnews1) or die(mysql_error());
-$row_Recordset2 = mysql_fetch_assoc($Recordset2);
-
-if (isset($_GET['totalRows_Recordset2'])) {
-  $totalRows_Recordset2 = $_GET['totalRows_Recordset2'];
-} else {
-  $all_Recordset2 = mysql_query($query_Recordset2);
-  $totalRows_Recordset2 = mysql_num_rows($all_Recordset2);
-}
-$totalPages_Recordset2 = ceil($totalRows_Recordset2/$maxRows_Recordset2)-1;
-?>
+<?php require_once('menu_side_logic.php'); ?>
 <!doctype html>
 <html>
 <head>
@@ -237,7 +162,7 @@ $totalPages_Recordset2 = ceil($totalRows_Recordset2/$maxRows_Recordset2)-1;
                 <td width="82%" bgcolor="#FFFEDC"><a href="index_matlob.php" target="_top"><strong style="color: #17036B; font-family: Segoe, 'Segoe UI', 'DejaVu Sans', 'Trebuchet MS', Verdana, sans-serif;"><span class="yelow">أحدث عقارات مطلوبة</span></strong></a></td>
               </tr>
               <tr>
-                <td colspan="2"><?php do { ?>
+                <td colspan="2"><?php foreach ($Recordset1 as $row_Recordset1) { ?>
                     <table width="60%" border="0" align="left" cellpadding="0" cellspacing="0">
                       <tbody>
                         <tr>
@@ -256,14 +181,14 @@ $totalPages_Recordset2 = ceil($totalRows_Recordset2/$maxRows_Recordset2)-1;
                         </tr>
                       </tbody>
                     </table>
-                    <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?></td>
+                    <?php } ?></td>
                 </tr>
               <tr>
                 <td bgcolor="#D3FFB5"><img src="offices.jpeg" width="40" height="40" alt=""/></td>
                 <td bgcolor="#D3FFB5"><a href="view_remember.php" target="_top"><strong>عقارات مهمة للمتابعة</strong></a></td>
               </tr>
               <tr>
-                <td colspan="2"><?php do { ?>
+                <td colspan="2"><?php foreach ($Recordset2 as $row_Recordset2) { ?>
                     <table width="60%" border="0" align="left" cellpadding="0" cellspacing="0">
                       <tbody>
                         <tr>
@@ -282,7 +207,7 @@ $totalPages_Recordset2 = ceil($totalRows_Recordset2/$maxRows_Recordset2)-1;
                           </tr>
                         </tbody>
                     </table>
-                    <?php } while ($row_Recordset2 = mysql_fetch_assoc($Recordset2)); ?></td>
+                    <?php } ?></td>
                 </tr>
             </tbody>
           </table>
@@ -312,8 +237,3 @@ $(function() {
 });
 </script>
 </html>
-<?php
-mysql_free_result($Recordset1);
-
-mysql_free_result($Recordset2);
-?>
