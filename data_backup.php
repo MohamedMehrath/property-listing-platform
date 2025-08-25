@@ -65,23 +65,21 @@ function backup_tables($pdo, $tables = '*')
     //cycle through
     foreach($tables as $table)
     {
-        $stmt = $pdo->query('SELECT * FROM '.$table);
+        $stmt = $pdo->query('SELECT * FROM `'.$table.'`');
         $num_fields = $stmt->columnCount();
 
-        $return.= 'DROP TABLE IF EXISTS '.$table.';';
-        $row2 = $pdo->query('SHOW CREATE TABLE '.$table)->fetch(PDO::FETCH_NUM);
+        $return.= 'DROP TABLE IF EXISTS `'.$table.'`;';
+        $row2 = $pdo->query('SHOW CREATE TABLE `'.$table.'`')->fetch(PDO::FETCH_NUM);
         $return.= "\n\n".$row2[1].";\n\n";
 
         while($row = $stmt->fetch(PDO::FETCH_NUM))
         {
-            $return.= 'INSERT INTO '.$table.' VALUES(';
-            for($j=0; $j<$num_fields; $j++)
-            {
-                $row[$j] = addslashes($row[$j]);
-                $row[$j] = str_replace("\n","\\n",$row[$j]);
-                if (isset($row[$j])) { $return.= '"'.$row[$j].'"' ; } else { $return.= '""'; }
-                if ($j<($num_fields-1)) { $return.= ','; }
+            $return.= 'INSERT INTO `'.$table.'` VALUES(';
+            $values = [];
+            foreach ($row as $value) {
+                $values[] = ($value === null) ? 'NULL' : $pdo->quote($value);
             }
+            $return .= implode(',', $values);
             $return.= ");\n";
         }
         $return.="\n\n\n";
