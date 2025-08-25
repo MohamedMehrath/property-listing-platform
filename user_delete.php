@@ -1,9 +1,9 @@
-<?php require_once('Connections/goodnews.php'); ?>
+<?php require_once('Connections/db.php'); ?>
 <?php
 if (!isset($_SESSION)) {
   session_start();
 }
-mysql_query("SET NAMES 'utf8'");
+
 $MM_authorizedUsers = "admin";
 $MM_donotCheckaccess = "false";
 
@@ -44,46 +44,19 @@ if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers,
   header("Location: ". $MM_restrictGoTo); 
   exit;
 }
-?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
 
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
+// New PDO connection
+try {
+    $pdo = get_db_connection('aqarmarket');
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
 }
 
 if ((isset($_GET['username'])) && ($_GET['username'] != "")) {
-  $deleteSQL = sprintf("DELETE FROM users WHERE username=%s",
-                       GetSQLValueString($_GET['username'], "text"));
-
-  mysql_select_db($database_utopia, $utopia);
-  $Result1 = mysql_query($deleteSQL, $utopia) or die(mysql_error());
+  $deleteSQL = "DELETE FROM users WHERE username=:username";
+  $stmt = $pdo->prepare($deleteSQL);
+  $stmt->bindParam(':username', $_GET['username'], PDO::PARAM_STR);
+  $stmt->execute();
 
   $deleteGoTo = "user_view.php";
   if (isset($_SERVER['QUERY_STRING'])) {
@@ -91,6 +64,7 @@ if ((isset($_GET['username'])) && ($_GET['username'] != "")) {
     $deleteGoTo .= $_SERVER['QUERY_STRING'];
   }
   header(sprintf("Location: %s", $deleteGoTo));
+  exit();
 }
 
 $currentPage = $_SERVER["PHP_SELF"];
@@ -99,11 +73,13 @@ $colname_Recordset1 = "-1";
 if (isset($_GET['username'])) {
   $colname_Recordset1 = $_GET['username'];
 }
-mysql_select_db($database_utopia, $utopia);
-$query_Recordset1 = sprintf("SELECT * FROM users WHERE username = %s ORDER BY username ASC", GetSQLValueString($colname_Recordset1, "text"));
-$Recordset1 = mysql_query($query_Recordset1, $utopia) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
+
+$query_Recordset1 = "SELECT * FROM users WHERE username = :username ORDER BY username ASC";
+$stmt = $pdo->prepare($query_Recordset1);
+$stmt->bindParam(':username', $colname_Recordset1, PDO::PARAM_STR);
+$stmt->execute();
+$row_Recordset1 = $stmt->fetch(PDO::FETCH_ASSOC);
+$totalRows_Recordset1 = $stmt->rowCount();
 
 $queryString_Recordset1 = "";
 if (!empty($_SERVER['QUERY_STRING'])) {
@@ -149,7 +125,7 @@ body {
 <body>
 <table width="90%" border="0" align="center">
   <tr>
-    <td align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner">Banner</iframe></td>
+    <td align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="Banner.php" name="Banner" width="900" height="160" align="top" scrolling="no" frameborder="0" id="Banner"></iframe></td>
   </tr>
   <tr>
     <td bgcolor="#FFFFFF">&nbsp;</td>
@@ -189,13 +165,8 @@ body {
     <td>&nbsp;</td>
   </tr>
   <tr>
-    <td align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="copyright.php" name="copyright" width="900" align="top" scrolling="no" frameborder="0" sandbox="allow-top-navigation" id="copyright">Banner</iframe></td>
+    <td align="center" valign="middle" bgcolor="#FFFFFF"><iframe src="copyright.php" name="copyright" width="900" align="top" scrolling="no" frameborder="0" sandbox="allow-top-navigation" id="copyright"></iframe></td>
   </tr>
 </table>
 </body>
 </html>
-<?php
-mysql_free_result($Recordset1);
-
-
-?>

@@ -1,8 +1,9 @@
+<?php require_once('Connections/db.php'); ?>
 <?php
 if (!isset($_SESSION)) {
   session_start();
 }
-mysql_query("SET NAMES 'utf8'");
+
 $MM_authorizedUsers = "admin";
 $MM_donotCheckaccess = "false";
 
@@ -43,26 +44,15 @@ if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers,
   header("Location: ". $MM_restrictGoTo); 
   exit;
 }
-?>
-<?php
-$dbhost = 'localhost';
-$dbuser = 'root';
-$dbpass = '';
-$dbname = 'aqarmarket';
 
-function backup_tables($host,$user,$pass,$name,$tables = '*')
+function backup_tables($pdo, $tables = '*')
 {
-
-    $link = mysql_connect($host,$user,$pass);
-    mysql_select_db($name,$link);
-    mysql_query("SET NAMES 'utf8'");
-
     //get all of the tables
     if($tables == '*')
     {
         $tables = array();
-        $result = mysql_query('SHOW TABLES');
-        while($row = mysql_fetch_row($result))
+        $stmt = $pdo->query('SHOW TABLES');
+        while($row = $stmt->fetch(PDO::FETCH_NUM))
         {
             $tables[] = $row[0];
         }
@@ -75,38 +65,42 @@ function backup_tables($host,$user,$pass,$name,$tables = '*')
     //cycle through
     foreach($tables as $table)
     {
-        $result = mysql_query('SELECT * FROM '.$table);
-        $num_fields = mysql_num_fields($result);
+        $stmt = $pdo->query('SELECT * FROM '.$table);
+        $num_fields = $stmt->columnCount();
 
-        $return.= 'DROP TABLE '.$table.';';
-        $row2 = mysql_fetch_row(mysql_query('SHOW CREATE TABLE '.$table));
+        $return.= 'DROP TABLE IF EXISTS '.$table.';';
+        $row2 = $pdo->query('SHOW CREATE TABLE '.$table)->fetch(PDO::FETCH_NUM);
         $return.= "\n\n".$row2[1].";\n\n";
 
-        for ($i = 0; $i < $num_fields; $i++) 
+        while($row = $stmt->fetch(PDO::FETCH_NUM))
         {
-            while($row = mysql_fetch_row($result))
+            $return.= 'INSERT INTO '.$table.' VALUES(';
+            for($j=0; $j<$num_fields; $j++)
             {
-                $return.= 'INSERT INTO '.$table.' VALUES(';
-                for($j=0; $j<$num_fields; $j++) 
-                {
-                    $row[$j] = addslashes($row[$j]);
-                    $row[$j] = str_replace("\n","\\n",$row[$j]);
-                    if (isset($row[$j])) { $return.= '"'.$row[$j].'"' ; } else { $return.= '""'; }
-                    if ($j<($num_fields-1)) { $return.= ','; }
-                }
-                $return.= ");\n";
+                $row[$j] = addslashes($row[$j]);
+                $row[$j] = str_replace("\n","\\n",$row[$j]);
+                if (isset($row[$j])) { $return.= '"'.$row[$j].'"' ; } else { $return.= '""'; }
+                if ($j<($num_fields-1)) { $return.= ','; }
             }
+            $return.= ");\n";
         }
         $return.="\n\n\n";
     }
 
     //save file
-    $handle = fopen('db-backup-'.time().'-'.(md5(implode(',',$tables))).'.sql','w+');
+    $fileName = 'db-backup-'.time().'-'.(md5(implode(',',$tables))).'.sql';
+    $handle = fopen($fileName,'w+');
     fwrite($handle,$return);
     fclose($handle);
+    return $fileName;
 }
 
-backup_tables($dbhost,$dbuser,$dbpass,$dbname);
+try {
+    $pdo = get_db_connection('aqarmarket');
+    $backup_file = backup_tables($pdo);
+} catch (PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -127,10 +121,8 @@ body {
 <body>
 <p><a href="./index0.php"><strong>رجوع</strong></a></p>
 <h2><em><strong>تم عمل نسخة احتياطية بنجاح .. الملف تجده فى المسار</strong></em></h2>
-<p><strong><em>c:\xampp</em>\htdocs/aqarmarket</strong></p>
+<p><strong><em>c:\xampp</em>\htdocs/aqarmarket/<?php echo $backup_file; ?></strong></p>
 <p><strong>أو</strong></p>
-<p><strong>localhost/aqarmarket</strong></p>
+<p><strong>localhost/aqarmarket/<?php echo $backup_file; ?></strong></p>
 </body>
 </html>
-
-
