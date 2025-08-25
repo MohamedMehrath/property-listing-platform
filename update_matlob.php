@@ -1,211 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-if (!isset($_SESSION)) {
-  session_start();
-}
-mysql_query("SET NAMES 'utf8'");
-$MM_authorizedUsers = "admin,editor";
-$MM_donotCheckaccess = "false";
-
-// *** Restrict Access To Page: Grant or deny access to this page
-function isAuthorized($strUsers, $strGroups, $UserName, $UserGroup) { 
-  // For security, start by assuming the visitor is NOT authorized. 
-  $isValid = False; 
-
-  // When a visitor has logged into this site, the Session variable MM_Username set equal to their username. 
-  // Therefore, we know that a user is NOT logged in if that Session variable is blank. 
-  if (!empty($UserName)) { 
-    // Besides being logged in, you may restrict access to only certain users based on an ID established when they login. 
-    // Parse the strings into arrays. 
-    $arrUsers = Explode(",", $strUsers); 
-    $arrGroups = Explode(",", $strGroups); 
-    if (in_array($UserName, $arrUsers)) { 
-      $isValid = true; 
-    } 
-    // Or, you may restrict access to only certain users based on their username. 
-    if (in_array($UserGroup, $arrGroups)) { 
-      $isValid = true; 
-    } 
-    if (($strUsers == "") && false) { 
-      $isValid = true; 
-    } 
-  } 
-  return $isValid; 
-}
-
-$MM_restrictGoTo = "./not_access.php";
-if (!((isset($_SESSION['MM_Username'])) && (isAuthorized("",$MM_authorizedUsers, $_SESSION['MM_Username'], $_SESSION['MM_UserGroup'])))) {   
-  $MM_qsChar = "?";
-  $MM_referrer = $_SERVER['PHP_SELF'];
-  if (strpos($MM_restrictGoTo, "?")) $MM_qsChar = "&";
-  if (isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING']) > 0) 
-  $MM_referrer .= "?" . $_SERVER['QUERY_STRING'];
-  $MM_restrictGoTo = $MM_restrictGoTo. $MM_qsChar . "accesscheck=" . urlencode($MM_referrer);
-  header("Location: ". $MM_restrictGoTo); 
-  exit;
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$editFormAction = $_SERVER['PHP_SELF'];
-if (isset($_SERVER['QUERY_STRING'])) {
-  $editFormAction .= "?" . htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_POST["MM_update"])) && ($_POST["MM_update"] == "form1")) {
-  $updateSQL = sprintf("UPDATE aqar_need SET madena=%s, madena_other=%s, aqar_type=%s, aqar_type_other=%s, namozg=%s, namozg_other=%s, address=%s, mesaha=%s, budget=%s, tashteeb=%s, notes=%s, cust_name=%s, telephone=%s, mobile=%s, masdr=%s, entry_date=%s, modkhel=%s, update_date=%s, motabaa=%s, amalya_type=%s, marhala=%s, updater=%s, door=%s, view_v=%s, rooms=%s, WC=%s, kmalyat=%s, email=%s, whatsapp=%s, remember=%s, details=%s, office_id=%s, tashteeb_other=%s, amalya_type_other=%s, marhala_other=%s, call_date=%s, action_history=%s, `found`=%s WHERE code=%s",
-                       GetSQLValueString($_POST['madena'], "text"),
-                       GetSQLValueString($_POST['madena_other'], "text"),
-                       GetSQLValueString($_POST['aqar_type'], "text"),
-                       GetSQLValueString($_POST['aqar_type_other'], "text"),
-                       GetSQLValueString($_POST['namozg'], "text"),
-                       GetSQLValueString($_POST['namozg_other'], "text"),
-                       GetSQLValueString($_POST['address'], "text"),
-                       GetSQLValueString($_POST['masaha'], "text"),
-                       GetSQLValueString($_POST['budget'], "text"),
-                       GetSQLValueString($_POST['tashteeb'], "text"),
-                       GetSQLValueString($_POST['notes'], "text"),
-                       GetSQLValueString($_POST['cust_name'], "text"),
-                       GetSQLValueString($_POST['telephone'], "text"),
-                       GetSQLValueString($_POST['mobile'], "text"),
-                       GetSQLValueString($_POST['masdr'], "text"),
-                       GetSQLValueString($_POST['entry_date'], "date"),
-                       GetSQLValueString($_POST['modkhel'], "text"),
-                       GetSQLValueString($_POST['update_date'], "date"),
-                       GetSQLValueString($_POST['motabaa'], "text"),
-                       GetSQLValueString($_POST['amalya_type'], "text"),
-                       GetSQLValueString($_POST['marhala'], "text"),
-                       GetSQLValueString($_POST['updater'], "text"),
-                       GetSQLValueString($_POST['door'], "text"),
-                       GetSQLValueString($_POST['view_v'], "text"),
-                       GetSQLValueString($_POST['rooms'], "int"),
-                       GetSQLValueString($_POST['wc'], "int"),
-                       GetSQLValueString($_POST['kmalyat'], "text"),
-                       GetSQLValueString($_POST['email'], "text"),
-                       GetSQLValueString($_POST['whatsapp'], "text"),
-                       GetSQLValueString(isset($_POST['remember']) ? "true" : "", "defined","1","0"),
-                       GetSQLValueString($_POST['details'], "text"),
-                       GetSQLValueString($_POST['officeid'], "int"),
-                       GetSQLValueString($_POST['tashteeb_other'], "text"),
-                       GetSQLValueString($_POST['amalya_type_other'], "text"),
-                       GetSQLValueString($_POST['marhala_other'], "text"),
-                       GetSQLValueString($_POST['call_date'], "text"),
-                       GetSQLValueString($_POST['action_history'], "text"),
-                       GetSQLValueString(isset($_POST['found']) ? "true" : "", "defined","1","0"),
-                       GetSQLValueString($_POST['code'], "text"));
-
-  mysql_select_db($database_goodnews1, $goodnews1);
-  $Result1 = mysql_query($updateSQL, $goodnews1) or die(mysql_error());
-
-  $updateGoTo = "index1.php";
-  if (isset($_SERVER['QUERY_STRING'])) {
-    $updateGoTo .= (strpos($updateGoTo, '?')) ? "&" : "?";
-    $updateGoTo .= $_SERVER['QUERY_STRING'];
-  }
-  header(sprintf("Location: %s", $updateGoTo));
-}
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetmadena = "SELECT distinct cityname FROM city ORDER BY cityname ASC";
-$Recordsetmadena = mysql_query($query_Recordsetmadena, $goodnews1) or die(mysql_error());
-$row_Recordsetmadena = mysql_fetch_assoc($Recordsetmadena);
-$totalRows_Recordsetmadena = mysql_num_rows($Recordsetmadena);
-
-$colname_Recordset1 = "-1";
-if (isset($_GET['code'])) {
-  $colname_Recordset1 = $_GET['code'];
-}
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = sprintf("SELECT * FROM aqar_need WHERE code = %s", GetSQLValueString($colname_Recordset1, "text"));
-$Recordset1 = mysql_query($query_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetaqar_type = "SELECT * FROM aqar_type_t ORDER BY aqar_type_name ASC";
-$Recordsetaqar_type = mysql_query($query_Recordsetaqar_type, $goodnews1) or die(mysql_error());
-$row_Recordsetaqar_type = mysql_fetch_assoc($Recordsetaqar_type);
-$totalRows_Recordsetaqar_type = mysql_num_rows($Recordsetaqar_type);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetamalya = "SELECT * FROM amalya_type_t ORDER BY amalya_type_name ASC";
-$Recordsetamalya = mysql_query($query_Recordsetamalya, $goodnews1) or die(mysql_error());
-$row_Recordsetamalya = mysql_fetch_assoc($Recordsetamalya);
-$totalRows_Recordsetamalya = mysql_num_rows($Recordsetamalya);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsettashteeb = "SELECT * FROM tashteeb_t ORDER BY tashteeb_name ASC";
-$Recordsettashteeb = mysql_query($query_Recordsettashteeb, $goodnews1) or die(mysql_error());
-$row_Recordsettashteeb = mysql_fetch_assoc($Recordsettashteeb);
-$totalRows_Recordsettashteeb = mysql_num_rows($Recordsettashteeb);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetstatus = "SELECT * FROM status_t ORDER BY status_name ASC";
-$Recordsetstatus = mysql_query($query_Recordsetstatus, $goodnews1) or die(mysql_error());
-$row_Recordsetstatus = mysql_fetch_assoc($Recordsetstatus);
-$totalRows_Recordsetstatus = mysql_num_rows($Recordsetstatus);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetview = "SELECT * FROM viewvv ORDER BY viewname ASC";
-$Recordsetview = mysql_query($query_Recordsetview, $goodnews1) or die(mysql_error());
-$row_Recordsetview = mysql_fetch_assoc($Recordsetview);
-$totalRows_Recordsetview = mysql_num_rows($Recordsetview);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetnamozg = "SELECT * FROM namozg ORDER BY namozgname ASC";
-$Recordsetnamozg = mysql_query($query_Recordsetnamozg, $goodnews1) or die(mysql_error());
-$row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg);
-$totalRows_Recordsetnamozg = mysql_num_rows($Recordsetnamozg);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetmarhala = "SELECT * FROM marhala ORDER BY marhalaname ASC";
-$Recordsetmarhala = mysql_query($query_Recordsetmarhala, $goodnews1) or die(mysql_error());
-$row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala);
-$totalRows_Recordsetmarhala = mysql_num_rows($Recordsetmarhala);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetdoor = "SELECT * FROM door ORDER BY doorname ASC";
-$Recordsetdoor = mysql_query($query_Recordsetdoor, $goodnews1) or die(mysql_error());
-$row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor);
-$totalRows_Recordsetdoor = mysql_num_rows($Recordsetdoor);
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordsetlaqab = "SELECT * FROM laqab ORDER BY laqab_name ASC";
-$Recordsetlaqab = mysql_query($query_Recordsetlaqab, $goodnews1) or die(mysql_error());
-$row_Recordsetlaqab = mysql_fetch_assoc($Recordsetlaqab);
-$totalRows_Recordsetlaqab = mysql_num_rows($Recordsetlaqab);
-?>
+<?php require_once('update_matlob_logic.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -262,16 +55,11 @@ body {
               <td width="15%" align="right"><label for="madena"></label>
                 <select name="madena" id="madena" tabindex="1">
                   <?php
-do {  
+foreach($Recordsetmadena as $row_Recordsetmadena) {
 ?>
                   <option value="<?php echo $row_Recordsetmadena['cityname']?>"<?php if (!(strcmp($row_Recordsetmadena['cityname'], $row_Recordset1['madena']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetmadena['cityname']?></option>
                   <?php
-} while ($row_Recordsetmadena = mysql_fetch_assoc($Recordsetmadena));
-  $rows = mysql_num_rows($Recordsetmadena);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetmadena, 0);
-	  $row_Recordsetmadena = mysql_fetch_assoc($Recordsetmadena);
-  }
+}
 ?>
                 </select></td>
               <td width="19%" align="center" bgcolor="#BBBBBB"><strong>المــديــنــــــة</strong></td>
@@ -291,16 +79,11 @@ do {
               <td align="right"><label for="aqar_type"></label>
                 <select name="aqar_type" id="aqar_type" tabindex="3">
                   <?php
-do {  
+foreach($Recordsetaqar_type as $row_Recordsetaqar_type) {
 ?>
                   <option value="<?php echo $row_Recordsetaqar_type['aqar_type_name']?>"<?php if (!(strcmp($row_Recordsetaqar_type['aqar_type_name'], $row_Recordset1['aqar_type']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetaqar_type['aqar_type_name']?></option>
                   <?php
-} while ($row_Recordsetaqar_type = mysql_fetch_assoc($Recordsetaqar_type));
-  $rows = mysql_num_rows($Recordsetaqar_type);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetaqar_type, 0);
-	  $row_Recordsetaqar_type = mysql_fetch_assoc($Recordsetaqar_type);
-  }
+}
 ?>
                 </select></td>
               <td align="center" bgcolor="#BBBBBB"><strong>نوع العقار</strong></td>
@@ -312,16 +95,11 @@ do {
               <td align="right"><label for="view_v"></label>
                 <select name="view_v" id="view_v">
                   <?php
-do {  
+foreach($Recordsetview as $row_Recordsetview) {
 ?>
                   <option value="<?php echo $row_Recordsetview['viewname']?>"<?php if (!(strcmp($row_Recordsetview['viewname'], $row_Recordset1['view_v']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetview['viewname']?></option>
                   <?php
-} while ($row_Recordsetview = mysql_fetch_assoc($Recordsetview));
-  $rows = mysql_num_rows($Recordsetview);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetview, 0);
-	  $row_Recordsetview = mysql_fetch_assoc($Recordsetview);
-  }
+}
 ?>
                 </select></td>
               <td align="center" valign="middle" bgcolor="#BBBBBB"><strong>View</strong></td>
@@ -329,16 +107,11 @@ do {
                 <input name="namozg_other" type="text" id="namozg_other" value="<?php echo $row_Recordset1['namozg_other']; ?>" size="20" />
                 <select name="namozg" id="namozg2">
                   <?php
-do {  
+foreach($Recordsetnamozg as $row_Recordsetnamozg) {
 ?>
                   <option value="<?php echo $row_Recordsetnamozg['namozgname']?>"<?php if (!(strcmp($row_Recordsetnamozg['namozgname'], $row_Recordset1['namozg']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetnamozg['namozgname']?></option>
                   <?php
-} while ($row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg));
-  $rows = mysql_num_rows($Recordsetnamozg);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetnamozg, 0);
-	  $row_Recordsetnamozg = mysql_fetch_assoc($Recordsetnamozg);
-  }
+}
 ?>
               </select></td>
               <td align="right" bgcolor="#BBBBBB"><strong>النموذج</strong></td>
@@ -353,16 +126,11 @@ do {
                 <label for="amalya_type2"></label>
                 <select name="amalya_type" id="amalya_type2" tabindex="6">
                   <?php
-do {  
+foreach($Recordsetamalya as $row_Recordsetamalya) {
 ?>
                   <option value="<?php echo $row_Recordsetamalya['amalya_type_name']?>"<?php if (!(strcmp($row_Recordsetamalya['amalya_type_name'], $row_Recordset1['amalya_type']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetamalya['amalya_type_name']?></option>
                   <?php
-} while ($row_Recordsetamalya = mysql_fetch_assoc($Recordsetamalya));
-  $rows = mysql_num_rows($Recordsetamalya);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetamalya, 0);
-	  $row_Recordsetamalya = mysql_fetch_assoc($Recordsetamalya);
-  }
+}
 ?>
                   </select>
               </span></td>
@@ -376,16 +144,11 @@ do {
                 <input name="tashteeb_other" type="text" id="tashteeb_other" value="<?php echo $row_Recordset1['tashteeb_other']; ?>" size="20" />
                 <select name="tashteeb" id="tashteeb" tabindex="7">
                   <?php
-do {  
+foreach($Recordsettashteeb as $row_Recordsettashteeb) {
 ?>
                   <option value="<?php echo $row_Recordsettashteeb['tashteeb_name']?>"<?php if (!(strcmp($row_Recordsettashteeb['tashteeb_name'], $row_Recordset1['tashteeb']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsettashteeb['tashteeb_name']?></option>
                   <?php
-} while ($row_Recordsettashteeb = mysql_fetch_assoc($Recordsettashteeb));
-  $rows = mysql_num_rows($Recordsettashteeb);
-  if($rows > 0) {
-      mysql_data_seek($Recordsettashteeb, 0);
-	  $row_Recordsettashteeb = mysql_fetch_assoc($Recordsettashteeb);
-  }
+}
 ?>
               </select></td>
               <td align="right" bgcolor="#BBBBBB"><strong>التشطيب</strong></td>
@@ -398,17 +161,12 @@ do {
                 <input name="marhala_other" type="text" id="marhala_other" value="<?php echo $row_Recordset1['marhala_other']; ?>" size="20" />
                 <select name="marhala" id="marhala2" tabindex="8">
                   <?php
-do {  
+foreach($Recordsetmarhala as $row_Recordsetmarhala) {
 ?>
                   <option value="<?php echo $row_Recordsetmarhala['marhalaname']?>"<?php if (!(strcmp($row_Recordsetmarhala['marhalaname'], 
 $row_Recordset1['marhala']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetmarhala['marhalaname']?></option>
                   <?php
-} while ($row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala));
-  $rows = mysql_num_rows($Recordsetmarhala);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetmarhala, 0);
-	  $row_Recordsetmarhala = mysql_fetch_assoc($Recordsetmarhala);
-  }
+}
 ?>
               </select></td>
               <td align="right" bgcolor="#BBBBBB"><strong>المرحلة</strong></td>
@@ -432,16 +190,11 @@ $row_Recordset1['marhala']))) {echo "selected=\"selected\"";} ?>><?php echo $row
               <span class="textfieldRequiredMsg">يجب ادخال قيمة المطلوب.</span><span class="textfieldInvalidFormatMsg">ادخل قيمة صحيحة.</span></span></td>
               <td align="center" valign="middle" bgcolor="#CCFF99"><select name="door" id="door2">
                 <?php
-do {  
+foreach($Recordsetdoor as $row_Recordsetdoor) {
 ?>
                 <option value="<?php echo $row_Recordsetdoor['doorname']?>"<?php if (!(strcmp($row_Recordsetdoor['doorname'], $row_Recordset1['door']))) {echo "selected=\"selected\"";} ?>><?php echo $row_Recordsetdoor['doorname']?></option>
                 <?php
-} while ($row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor));
-  $rows = mysql_num_rows($Recordsetdoor);
-  if($rows > 0) {
-      mysql_data_seek($Recordsetdoor, 0);
-	  $row_Recordsetdoor = mysql_fetch_assoc($Recordsetdoor);
-  }
+}
 ?>
               </select></td>
             </tr>
@@ -630,26 +383,3 @@ var sprytextfield1 = new Spry.Widget.ValidationTextField("sprytextfield1", "none
 </script>
 </body>
 </html>
-<?php
-mysql_free_result($Recordsetmadena);
-
-mysql_free_result($Recordset1);
-
-mysql_free_result($Recordsetaqar_type);
-
-mysql_free_result($Recordsetamalya);
-
-mysql_free_result($Recordsettashteeb);
-
-mysql_free_result($Recordsetstatus);
-
-mysql_free_result($Recordsetview);
-
-mysql_free_result($Recordsetnamozg);
-
-mysql_free_result($Recordsetmarhala);
-
-mysql_free_result($Recordsetdoor);
-
-mysql_free_result($Recordsetlaqab);
-?>

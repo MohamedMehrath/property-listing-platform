@@ -1,89 +1,4 @@
-<?php require_once('Connections/goodnews1.php'); ?>
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-//initialize the session
-if (!isset($_SESSION)) {
-  session_start();
-}
-mysql_query("SET NAMES 'utf8'");
-// ** Logout the current user. **
-$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
-if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
-  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
-  //to fully log out a visitor we need to clear the session varialbles
-  $_SESSION['MM_Username'] = NULL;
-  $_SESSION['MM_UserGroup'] = NULL;
-  $_SESSION['PrevUrl'] = NULL;
-  unset($_SESSION['MM_Username']);
-  unset($_SESSION['MM_UserGroup']);
-  unset($_SESSION['PrevUrl']);
-	
-  $logoutGoTo = "index.php";
-  if ($logoutGoTo) {
-    header("Location: $logoutGoTo");
-    exit;
-  }
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$currentPage = $_SERVER["PHP_SELF"];
-
-mysql_select_db($database_goodnews1, $goodnews1);
-$query_Recordset1 = "SELECT * FROM offices ORDER BY name DESC";
-$Recordset1 = mysql_query($query_Recordset1, $goodnews1) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
-
-$queryString_Recordset1 = "";
-if (!empty($_SERVER['QUERY_STRING'])) {
-  $params = explode("&", $_SERVER['QUERY_STRING']);
-  $newParams = array();
-  foreach ($params as $param) {
-    if (stristr($param, "pageNum_Recordset1") == false && 
-        stristr($param, "totalRows_Recordset1") == false) {
-      array_push($newParams, $param);
-    }
-  }
-  if (count($newParams) != 0) {
-    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
-  }
-}
-$queryString_Recordset1 = sprintf("&totalRows_Recordset1=%d%s", $totalRows_Recordset1, $queryString_Recordset1);
-?>
+<?php require_once('index_offices_logic.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -135,7 +50,7 @@ body {
     </tr>
     <tr>
       <td rowspan="2" valign="top">&nbsp;</td>
-      <td rowspan="2" valign="top"><?php do { ?>
+      <td rowspan="2" valign="top"><?php foreach ($Recordset1 as $row_Recordset1) { ?>
         <div class="panel-group" id="accordion" dir="rtl">
           <div class="panel panel-default">
             <div class="panel-heading">
@@ -186,7 +101,7 @@ body {
             </div>
           </div>
         </div>
-          <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?>
+          <?php } ?>
         <p>&nbsp;</p>
       <p>&nbsp;</p></td>
       <td rowspan="2" valign="top"><p><strong><a href="insert_office.php" target="new">ادخال مكتب جديد</a></strong></p></td>
@@ -205,6 +120,3 @@ body {
 </p>
 </body>
 </html>
-<?php
-mysql_free_result($Recordset1);
-?>

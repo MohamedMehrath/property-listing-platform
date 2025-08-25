@@ -1,261 +1,4 @@
-<?php require_once('Connections/goodnews.php'); ?>
-<?php
-mysql_query("SET NAMES 'utf8'");
-ini_set('max_execution_time', 0);
-// ** Logout the current user. **
-$logoutAction = $_SERVER['PHP_SELF']."?doLogout=true";
-if ((isset($_SERVER['QUERY_STRING'])) && ($_SERVER['QUERY_STRING'] != "")){
-  $logoutAction .="&". htmlentities($_SERVER['QUERY_STRING']);
-}
-
-if ((isset($_GET['doLogout'])) &&($_GET['doLogout']=="true")){
-  //to fully log out a visitor we need to clear the session varialbles
-  $_SESSION['MM_Username'] = NULL;
-  $_SESSION['MM_UserGroup'] = NULL;
-  $_SESSION['PrevUrl'] = NULL;
-  unset($_SESSION['MM_Username']);
-  unset($_SESSION['MM_UserGroup']);
-  unset($_SESSION['PrevUrl']);
-	
-  $logoutGoTo = "index.php";
-  if ($logoutGoTo) {
-    header("Location: $logoutGoTo");
-    exit;
-  }
-}
-?>
-<?php
-if (!function_exists("GetSQLValueString")) {
-function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDefinedValue = "") 
-{
-  if (PHP_VERSION < 6) {
-    $theValue = get_magic_quotes_gpc() ? stripslashes($theValue) : $theValue;
-  }
-
-  $theValue = function_exists("mysql_real_escape_string") ? mysql_real_escape_string($theValue) : mysql_escape_string($theValue);
-
-  switch ($theType) {
-    case "text":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;    
-    case "long":
-    case "int":
-      $theValue = ($theValue != "") ? intval($theValue) : "NULL";
-      break;
-    case "double":
-      $theValue = ($theValue != "") ? doubleval($theValue) : "NULL";
-      break;
-    case "date":
-      $theValue = ($theValue != "") ? "'" . $theValue . "'" : "NULL";
-      break;
-    case "defined":
-      $theValue = ($theValue != "") ? $theDefinedValue : $theNotDefinedValue;
-      break;
-  }
-  return $theValue;
-}
-}
-
-$currentPage = $_SERVER["PHP_SELF"];
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qcity = "SELECT distinct cityname FROM city ORDER BY cityname DESC";
-$Qcity = mysql_query($query_Qcity, $utopia) or die(mysql_error());
-$row_Qcity = mysql_fetch_assoc($Qcity);
-$totalRows_Qcity = mysql_num_rows($Qcity);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qaqar_type = "SELECT distinct aqar_type_name FROM aqar_type_t";
-$Qaqar_type = mysql_query($query_Qaqar_type, $utopia) or die(mysql_error());
-$row_Qaqar_type = mysql_fetch_assoc($Qaqar_type);
-$totalRows_Qaqar_type = mysql_num_rows($Qaqar_type);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qamalya_type = "SELECT distinct amalya_type_name FROM amalya_type_t";
-$Qamalya_type = mysql_query($query_Qamalya_type, $utopia) or die(mysql_error());
-$row_Qamalya_type = mysql_fetch_assoc($Qamalya_type);
-$totalRows_Qamalya_type = mysql_num_rows($Qamalya_type);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qatatus = "SELECT distinct status_name FROM status_t";
-$Qatatus = mysql_query($query_Qatatus, $utopia) or die(mysql_error());
-$row_Qatatus = mysql_fetch_assoc($Qatatus);
-$totalRows_Qatatus = mysql_num_rows($Qatatus);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Qtashteeb = "SELECT distinct tashteeb_name FROM tashteeb_t";
-$Qtashteeb = mysql_query($query_Qtashteeb, $utopia) or die(mysql_error());
-$row_Qtashteeb = mysql_fetch_assoc($Qtashteeb);
-$totalRows_Qtashteeb = mysql_num_rows($Qtashteeb);
-
-mysql_select_db($database_utopia, $utopia);
-$query_Recordset101 = "SELECT distinct marhala,door FROM udata";
-$Recordset101 = mysql_query($query_Recordset101, $utopia) or die(mysql_error());
-$row_Recordset101 = mysql_fetch_assoc($Recordset101);
-$totalRows_Recordset101 = mysql_num_rows($Recordset101);
-
-mysql_select_db($database_utopia, $utopia);
-$madena_Recordset1 = "-1";
-$aqartype_Recordset1="-1";
-
-// test top100
-if(isset($_POST['top100']) && $_POST['top100'] != ""){
-  $top_Recordset1 = $_POST['top100'];
-  $ord = $_POST['ordby'] . " " . $_POST['ordtype'];
-  $query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM udata ORDER BY %s LIMIT %d",$ord, GetSQLValueString($top_Recordset1,"integer"));
-  $R17 = mysql_query($query17, $utopia) or die(mysql_error());
-		
-	}else{
-		
-// 1- Tmadena
-if (isset($_POST['madena']) && $_POST['madena'] !="") {
-  $madena_Recordset1 = $_POST['madena'];
- 
-  $query1 = sprintf("CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata WHERE madena = %s ", GetSQLValueString($madena_Recordset1, "text"));
-  $R1 = mysql_query($query1, $utopia) or die(mysql_error());
-}else{
-	$query1 = sprintf("CREATE TEMPORARY TABLE tmadena as SELECT * FROM udata");
-	$R1 = mysql_query($query1, $utopia) or die(mysql_error());
-	}
-// 2- taqartype
-if (isset($_POST['aqar_type']) && $_POST['aqar_type'] !="") {
-  $aqartype_Recordset1 = $_POST['aqar_type'];
-  $query2 = sprintf("CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena WHERE aqar_type = %s", GetSQLValueString($aqartype_Recordset1, "text"));
-  $R2 = mysql_query($query2, $utopia) or die(mysql_error());
-}else{
-	$query2 = sprintf("CREATE TEMPORARY TABLE taqartype as SELECT * FROM tmadena");
-	$R2 = mysql_query($query2, $utopia) or die(mysql_error());
-	}
-
-// 4- tstatus
-if (isset($_POST['status']) && $_POST['status'] !="") {
-  $status_Recordset1 = $_POST['status'];
-  $query4 = sprintf("CREATE TEMPORARY TABLE tstatus as SELECT * FROM taqartype WHERE status = %s", GetSQLValueString($status_Recordset1, "text"));
-  $R4 = mysql_query($query4, $utopia) or die(mysql_error());
-}else{
-	$query4 = sprintf("CREATE TEMPORARY TABLE tstatus as SELECT * FROM taqartype");
-	$R4 = mysql_query($query4, $utopia) or die(mysql_error());
-	}	
-
-// 9- Tcode
-if (isset($_POST['code']) && $_POST['code'] !="") {
-  $code_Recordset1 = $_POST['code'];
-  $query9 = sprintf("CREATE TEMPORARY TABLE tcode as SELECT * FROM tstatus WHERE code = %s", GetSQLValueString($code_Recordset1, "text"));
-  $R9 = mysql_query($query9, $utopia) or die(mysql_error());
-}else{
-	$query9 = sprintf("CREATE TEMPORARY TABLE tcode as SELECT * FROM tstatus");
-	$R9 = mysql_query($query9, $utopia) or die(mysql_error());
-	}		
-// 10- Tmarhala
-error_reporting( error_reporting() & ~E_NOTICE );
-if((isset($_POST['m1']) && ($_POST['m1']!=-1))||(isset($_POST['m2']) && ($_POST['m2']!=-1))||(isset($_POST['m3']) && ($_POST['m3']!=-1))||(isset($_POST['m4']) && ($_POST['m4']!=-1))||(isset($_POST['m5']) && ($_POST['m5']!=-1))||(isset($_POST['m6']) && ($_POST['m6']!=-1))){
-	$query10 = sprintf("CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode WHERE marhala=%d OR marhala=%d OR marhala=%d OR marhala=%d OR marhala=%d OR marhala=%d",$_POST['m1'],$_POST['m2'],$_POST['m3'],$_POST['m4'],$_POST['m5'],$_POST['m6']);
-  $R10 = mysql_query($query10, $utopia) or die(mysql_error());
-}
-else
-{
-if (isset($_POST['marhala']) && $_POST['marhala'] !="") {
-  $marhala_Recordset1 = $_POST['marhala'];
-  $query10 = sprintf("CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode WHERE marhala LIKE %s", GetSQLValueString("%".$marhala_Recordset1."%", "text"));
-  $R10 = mysql_query($query10, $utopia) or die(mysql_error());
-}else{
-	$query10 = sprintf("CREATE TEMPORARY TABLE tmarhala as SELECT * FROM tcode");
-	$R10 = mysql_query($query10, $utopia) or die(mysql_error());
-	}		
-}
-// 12- Tcustomername
-if (isset($_POST['customer_name']) && $_POST['customer_name'] !="") {
-  $customer_name_Recordset1 = $_POST['customer_name'];
-  $query12 = sprintf("CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tmarhala WHERE cust_name LIKE %s", GetSQLValueString("%".$customer_name_Recordset1."%", "text"));
-  $R12 = mysql_query($query12, $utopia) or die(mysql_error());
-}else{
-	$query12 = sprintf("CREATE TEMPORARY TABLE tcustomername as SELECT * FROM tmarhala");
-	$R12 = mysql_query($query12, $utopia) or die(mysql_error());
-	}		
-// 13- Tmobile
-if (isset($_POST['mobile']) && $_POST['mobile'] !="") {
-  $mobile_Recordset1 = $_POST['mobile'];
-  $query13 = sprintf("CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername WHERE mobile = %s OR telephone = %s", GetSQLValueString($mobile_Recordset1, "text"),GetSQLValueString($mobile_Recordset1, "text"));
-  $R13 = mysql_query($query13, $utopia) or die(mysql_error());
-}else{
-	$query13 = sprintf("CREATE TEMPORARY TABLE tmobile as SELECT * FROM tcustomername");
-	$R13 = mysql_query($query13, $utopia) or die(mysql_error());
-	}	
-
-// 14- Tgeem
-if (isset($_POST['geem']) && $_POST['geem'] !="") {
-  $geem_Recordset1 = $_POST['geem'];
-  $query14 = sprintf("CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile WHERE geem = %s", GetSQLValueString($geem_Recordset1, "text"));
-  $R14 = mysql_query($query14, $utopia) or die(mysql_error());
-}else{
-	$query14 = sprintf("CREATE TEMPORARY TABLE tgeem as SELECT * FROM tmobile");
-	$R14 = mysql_query($query14, $utopia) or die(mysql_error());
-	}
-		
-// 15- Tain
-if (isset($_POST['ain']) && $_POST['ain'] !="") {
-  $ain_Recordset1 = $_POST['ain'];
-  $query15 = sprintf("CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem WHERE ain = %s", GetSQLValueString($ain_Recordset1, "text"));
-  $R15 = mysql_query($query15, $utopia) or die(mysql_error());
-}else{
-	$query15 = sprintf("CREATE TEMPORARY TABLE tain as SELECT * FROM tgeem");
-	$R15 = mysql_query($query15, $utopia) or die(mysql_error());
-	}
-// 16- Tdoor
-if((isset($_POST['d1']) && ($_POST['d1']!=-1))||(isset($_POST['d2']) && ($_POST['d2']!=-1))||(isset($_POST['d3']) && ($_POST['d3']!=-1))||(isset($_POST['d4']) && ($_POST['d4']!=-1))||(isset($_POST['d5']) && ($_POST['d5']!=-1))||(isset($_POST['d6']) && ($_POST['d6']!=-1))||(isset($_POST['d0']) && ($_POST['d0']!=-1))){
-	$query16 = sprintf("CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain WHERE door = %d OR door = %d  OR door = %d OR door = %d OR door = %d OR door = %d OR door = %d ",$_POST['d1'],$_POST['d2'],$_POST['d3'],$_POST['d4'],$_POST['d5'],$_POST['d6'],$_POST['d0']);
-  $R16 = mysql_query($query16, $utopia) or die(mysql_error());
-}
-else
-{
-if (isset($_POST['door']) && $_POST['door'] !="") {
-  $door_Recordset1 = $_POST['door'];
-  $query16 = sprintf("CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain WHERE door = %s", GetSQLValueString($door_Recordset1, "text"));
-  $R16 = mysql_query($query16, $utopia) or die(mysql_error());
-}else{
-	$query16 = sprintf("CREATE TEMPORARY TABLE tdoor as SELECT * FROM tain");
-	$R16 = mysql_query($query16, $utopia) or die(mysql_error());
-	}
-}
-// 17- Twow
-if (isset($_POST['wow']) && $_POST['wow'] !="") {
-  $wow_Recordset1 = $_POST['wow'];
-  $query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor WHERE wow = %s ORDER BY update_date DESC", GetSQLValueString($wow_Recordset1, "text"));
-  $R17 = mysql_query($query17, $utopia) or die(mysql_error());
-}else{
-	
-	$query17 = sprintf("CREATE TEMPORARY TABLE twow as SELECT * FROM tdoor ORDER BY update_date DESC");
-	$R17 = mysql_query($query17, $utopia) or die(mysql_error());
-	}	
-}// end of top100
-$query_Recordset1 = sprintf(" SELECT * FROM twow");
-$Recordset1 = mysql_query($query_Recordset1, $utopia) or die(mysql_error());
-$row_Recordset1 = mysql_fetch_assoc($Recordset1);
-$totalRows_Recordset1 = mysql_num_rows($Recordset1);
-
-
-$maxRows_Recordset1 = 100;
-$pageNum_Recordset1 = 0;
-if (isset($_GET['pageNum_Recordset1'])) {
-  $pageNum_Recordset1 = $_GET['pageNum_Recordset1'];
-}
-$startRow_Recordset1 = $pageNum_Recordset1 * $maxRows_Recordset1;
-$queryString_Recordset1 = "";
-if (!empty($_SERVER['QUERY_STRING'])) {
-  $params = explode("&", $_SERVER['QUERY_STRING']);
-  $newParams = array();
-  foreach ($params as $param) {
-    if (stristr($param, "pageNum_Recordset1") == false && 
-        stristr($param, "totalRows_Recordset1") == false) {
-      array_push($newParams, $param);
-    }
-  }
-  if (count($newParams) != 0) {
-    $queryString_Recordset1 = "&" . htmlentities(implode("&", $newParams));
-  }
-}
-$queryString_Recordset1 = sprintf("&totalRows_Recordset1=%d%s", $totalRows_Recordset1, $queryString_Recordset1);
-?>
+<?php require_once('custom_searchold_logic.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -347,18 +90,9 @@ body {
           <td width="24%" align="center" valign="middle" bgcolor="#9B9B9B" class="black"><strong>اسم العميل</strong></td>
           <td colspan="2" align="right" valign="middle" bgcolor="#C9C9C9"><select name="madena" tabindex="2" id="madena2">
             <option value="">الكل</option>
-            <?php
-do {  
-?>
+            <?php foreach($Qcity_rows as $row_Qcity) { ?>
             <option value="<?php echo $row_Qcity['cityname']?>"><?php echo $row_Qcity['cityname']?></option>
-            <?php
-} while ($row_Qcity = mysql_fetch_assoc($Qcity));
-  $rows = mysql_num_rows($Qcity);
-  if($rows > 0) {
-      mysql_data_seek($Qcity, 0);
-	  $row_Qcity = mysql_fetch_assoc($Qcity);
-  }
-?>
+            <?php } ?>
           </select></td>
           <td align="right" valign="middle" bgcolor="#9B9B9B" class="black"><strong>المــــديـنـــــــة</strong></td>
         </tr>
@@ -370,45 +104,27 @@ do {
           <td align="center" valign="middle" bgcolor="#9B9B9B" class="black"><strong>رقم الموبايل</strong></td>
           <td colspan="2" align="right" valign="middle" bgcolor="#C9C9C9"><select name="aqar_type" tabindex="3" id="aqar_type2">
             <option value="">الكل</option>
-            <?php
-do {  
-?>
+            <?php foreach($Qaqar_type_rows as $row_Qaqar_type) { ?>
             <option value="<?php echo $row_Qaqar_type['aqar_type_name']?>"><?php echo $row_Qaqar_type['aqar_type_name']?></option>
-            <?php
-} while ($row_Qaqar_type = mysql_fetch_assoc($Qaqar_type));
-  $rows = mysql_num_rows($Qaqar_type);
-  if($rows > 0) {
-      mysql_data_seek($Qaqar_type, 0);
-	  $row_Qaqar_type = mysql_fetch_assoc($Qaqar_type);
-  }
-?>
+            <?php } ?>
           </select></td>
           <td align="right" valign="middle" bgcolor="#9B9B9B" class="black"><strong>نوع العقــــــار</strong></td>
         </tr>
         <tr>
           <td colspan="2" rowspan="3" align="right" valign="middle" bgcolor="#C9C9C9" class="black"><p> - 
 فلترالبحث
-مدينة <?php echo GetSQLValueString($madena_Recordset1, "text"); ?> -
-نوع العقار<?php echo GetSQLValueString($aqartype_Recordset1, "text"); ?> -
-الحالة<?php echo GetSQLValueString($status_Recordset1, "text"); ?> -
-المرحلة<?php echo GetSQLValueString($marhala_Recordset1, "text"); ?> - 
+مدينة <?php echo $madena_Recordset1; ?> -
+نوع العقار<?php echo $aqartype_Recordset1; ?> -
+الحالة<?php echo $status_Recordset1; ?> -
+المرحلة<?php echo $marhala_Recordset1; ?> -
 </p></td>
           <td colspan="2" align="right" valign="middle" bgcolor="#C9C9C9" class="black"><span id="sprytextfield6">
             <label for="price_from"></label>
             <select name="status" tabindex="4" id="status2">
               <option value="">الكل</option>
-              <?php
-do {  
-?>
+              <?php foreach($Qstatus_rows as $row_Qatatus) { ?>
               <option value="<?php echo $row_Qatatus['status_name']?>"><?php echo $row_Qatatus['status_name']?></option>
-              <?php
-} while ($row_Qatatus = mysql_fetch_assoc($Qatatus));
-  $rows = mysql_num_rows($Qatatus);
-  if($rows > 0) {
-      mysql_data_seek($Qatatus, 0);
-	  $row_Qatatus = mysql_fetch_assoc($Qatatus);
-  }
-?>
+              <?php } ?>
               </select>
           </span></td>
           <td align="right" valign="middle" bgcolor="#9B9B9B" class="black"><strong>الحـــــــــالــــة</strong></td>
@@ -438,18 +154,9 @@ do {
           </table>            <label for="marhala"></label></td>
           <td align="right" valign="middle" bgcolor="#C9C9C9" class="black"><select name="marhala" tabindex="5" id="marhala">
             <option value="">الكل</option>
-            <?php
-do {  
-?>
+            <?php foreach($Recordset101 as $row_Recordset101) { ?>
             <option value="<?php echo $row_Recordset101['marhala']?>"><?php echo $row_Recordset101['marhala']?></option>
-            <?php
-} while ($row_Recordset101 = mysql_fetch_assoc($Recordset101));
-  $rows = mysql_num_rows($Recordset101);
-  if($rows > 0) {
-      mysql_data_seek($Recordset101, 0);
-	  $row_Recordset101 = mysql_fetch_assoc($Recordset101);
-  }
-?>
+            <?php } ?>
           </select></td>
           <td align="right" valign="middle" bgcolor="#9B9B9B" class="black"><strong>المرحلة</strong></td>
           </tr>
@@ -481,18 +188,9 @@ do {
           </table>            <label for="door"></label></td>
           <td align="right" valign="middle" bgcolor="#C9C9C9" class="black"><select name="door" tabindex="6" id="door">
             <option value="">الكل</option>
-            <?php
-do {  
-?>
+            <?php foreach($Recordset101 as $row_Recordset101) { ?>
             <option value="<?php echo $row_Recordset101['door']?>"><?php echo $row_Recordset101['door']?></option>
-            <?php
-} while ($row_Recordset101 = mysql_fetch_assoc($Recordset101));
-  $rows = mysql_num_rows($Recordset101);
-  if($rows > 0) {
-      mysql_data_seek($Recordset101, 0);
-	  $row_Recordset101 = mysql_fetch_assoc($Recordset101);
-  }
-?>
+            <?php } ?>
           </select></td>
           <td align="right" valign="middle" bgcolor="#9B9B9B" class="black"><strong>الــــــدور</strong></td>
           </tr>
@@ -608,7 +306,7 @@ do {
             <td align="center" valign="middle" bgcolor="#314ECE" class="black"><strong class="yelow">الكود</strong></td>
             <td align="center" valign="middle" bgcolor="#314ECE" class="black">&nbsp;</td>
           </tr>
-          <?php do { ?>
+          <?php foreach ($Recordset1 as $row_Recordset1) { ?>
             <tr>
               <td align="center" valign="middle" bgcolor="#FFFFFF"><a href="./delete_item_admin.php?code=<?php echo $row_Recordset1['code']; ?>">حذف</a></td>
               <td align="center" valign="middle" bgcolor="#FFFFFF"><a href="./print_sheet.php?code=<?php echo $row_Recordset1['code']; ?>">التفاصيل</a></td>
@@ -637,7 +335,7 @@ do {
             <tr bgcolor="#9B9B9B">
               <td colspan="22" align="center" valign="middle"><hr /></td>
             </tr>
-            <?php } while ($row_Recordset1 = mysql_fetch_assoc($Recordset1)); ?>
+            <?php } ?>
         </table>
     <?php } // Show if recordset not empty ?></td>
   </tr>
@@ -661,18 +359,3 @@ var sprytextfield15 = new Spry.Widget.ValidationTextField("sprytextfield15", "in
 </script>
 </body>
 </html>
-<?php
-mysql_free_result($Qcity);
-
-mysql_free_result($Qaqar_type);
-
-mysql_free_result($Qamalya_type);
-
-mysql_free_result($Qatatus);
-
-mysql_free_result($Qtashteeb);
-
-mysql_free_result($Recordset101);
-
-mysql_free_result($Recordset1);
-?>
