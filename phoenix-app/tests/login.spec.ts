@@ -6,16 +6,16 @@ test.describe('Login Page', () => {
 
     await expect(page).toHaveTitle(/Login/);
 
-    const heading = page.locator('h1', { hasText: 'Login' });
+    const heading = page.getByRole('heading', { name: 'Login' });
     await expect(heading).toBeVisible();
 
-    const emailInput = page.locator('input[type="email"]');
+    const emailInput = page.getByPlaceholder('Email');
     await expect(emailInput).toBeVisible();
 
-    const passwordInput = page.locator('input[type="password"]');
+    const passwordInput = page.getByPlaceholder('Password');
     await expect(passwordInput).toBeVisible();
 
-    const loginButton = page.locator('button', { hasText: 'Log In' });
+    const loginButton = page.getByRole('button', { name: 'Log In' });
     await expect(loginButton).toBeVisible();
   });
 });
