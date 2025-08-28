@@ -53,7 +53,8 @@ NEXTAUTH_URL="http://localhost:3000"
 # GITHUB_ID=
 # GITHUB_SECRET=
 
-# Cloud Storage for property images (e.g., AWS S3)
+# Cloud Storage for property images (e.g., AWS S3 or Cloudflare R2)
+# For R2, you may also need to set S3_ENDPOINT.
 S3_ACCESS_KEY_ID="YOUR_S3_ACCESS_KEY"
 S3_SECRET_ACCESS_KEY="YOUR_S3_SECRET_ACCESS_KEY"
 S3_REGION="YOUR_S3_REGION"
