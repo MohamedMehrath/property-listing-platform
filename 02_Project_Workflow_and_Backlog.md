@@ -40,7 +40,7 @@ This section contains the draft content for the `.env.example` file. This file l
 # .env.example
 
 # PostgreSQL Database Connection
-# The connection string for your PostgreSQL database.
+# The connection string for your PostgreSQL database. For local dev, you may need to remove `?sslmode=require`.
 DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
 
 # NextAuth.js Configuration
