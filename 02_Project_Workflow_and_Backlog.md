@@ -40,7 +40,7 @@ This section contains the draft content for the `.env.example` file. This file l
 # .env.example
 
 # PostgreSQL Database Connection
-# The connection string for your PostgreSQL database. For local dev, you may need to remove `?sslmode=require`.
+# The connection string for your PostgreSQL database.
 DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
 
 # NextAuth.js Configuration
@@ -53,8 +53,7 @@ NEXTAUTH_URL="http://localhost:3000"
 # GITHUB_ID=
 # GITHUB_SECRET=
 
-# Cloud Storage for property images (e.g., AWS S3 or Cloudflare R2)
-# For R2, you may also need to set S3_ENDPOINT.
+# Cloud Storage for property images (e.g., AWS S3)
 S3_ACCESS_KEY_ID="YOUR_S3_ACCESS_KEY"
 S3_SECRET_ACCESS_KEY="YOUR_S3_SECRET_ACCESS_KEY"
 S3_REGION="YOUR_S3_REGION"
